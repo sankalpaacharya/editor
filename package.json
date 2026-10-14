@@ -8,6 +8,7 @@
   "main": "./out/main/index.js",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
+    "postinstall": "node scripts/install-ffprobe.mjs",
     "dev": "electron-vite dev --watch",
     "build": "pnpm typecheck && electron-vite build",
     "preview": "electron-vite preview",
@@ -38,7 +39,6 @@
     "cn": "^0.4.0",
     "electron-updater": "^6.8.9",
     "ffmpeg-static": "5.2.0",
-    "ffprobe-static": "^3.1.0",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.8.1",
     "react": "^19.3.0",

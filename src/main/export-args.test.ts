@@ -1,9 +1,10 @@
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import ffmpeg from 'ffmpeg-static'
-import ffprobe from 'ffprobe-static'
+import { devFfprobePath } from './ffprobe-path'
 import { describe, expect, it } from 'vitest'
 import type { Sequence } from '../shared/sequence'
 import { buildExportArgs, parseProgressSeconds, type ResolvedMedia } from './export-args'
@@ -13,10 +14,11 @@ const SILENT = '00000000-0000-4000-8000-000000000002'
 const LOGO = '00000000-0000-4000-8000-000000000003'
 
 const makeFile = (args: string[]) => execFileSync(ffmpeg, ['-y', ...args], { stdio: 'pipe' })
+const ffprobe = devFfprobePath(join(dirname(fileURLToPath(import.meta.url)), '../..'))
 
 const probe = (path: string) =>
   JSON.parse(
-    execFileSync(ffprobe.path, [
+    execFileSync(ffprobe, [
       '-v',
       'error',
       '-show_entries',

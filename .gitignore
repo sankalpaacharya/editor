@@ -1,5 +1,6 @@
 node_modules
 out
 release
+resources/bin/
 *.log
 .DS_Store
