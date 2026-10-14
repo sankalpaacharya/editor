@@ -27,7 +27,7 @@ function InsertButton({
     <button
       type="button"
       className={cn(
-        'flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-muted-foreground transition-colors outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40',
+        'flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-muted-foreground transition-colors outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40',
         className
       )}
       {...props}
@@ -41,7 +41,7 @@ function InsertButton({
 export function InsertBar({ canOverlay, onVideo, onImage, onText }: InsertBarProps) {
   const overlayHint = canOverlay ? undefined : 'Add a video first'
   return (
-    <div className="flex items-center gap-0.5 rounded-full bg-card p-1">
+    <div className="flex items-center gap-0.5 rounded-lg bg-card p-1">
       <InsertButton icon={Video01Icon} onClick={onVideo}>
         Video
       </InsertButton>

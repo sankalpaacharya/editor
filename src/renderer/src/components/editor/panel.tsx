@@ -10,7 +10,7 @@ interface PanelProps {
 
 export function Panel({ title, actions, className, children }: PanelProps) {
   return (
-    <section className={cn('flex min-h-0 flex-col overflow-hidden rounded-xl bg-card', className)}>
+    <section className={cn('flex min-h-0 flex-col overflow-hidden rounded-lg bg-card', className)}>
       {title !== undefined && (
         <header className="flex h-12 shrink-0 items-center gap-2 px-4">
           <h2 className="min-w-0 truncate text-sm font-medium">{title}</h2>

@@ -23,7 +23,7 @@ interface ProjectCardProps {
 export function ProjectCard({ project, onOpen, onRename, onDelete }: ProjectCardProps) {
   const [dialog, setDialog] = useState<'rename' | 'delete' | null>(null)
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-xl bg-muted p-1.5 transition-colors hover:bg-accent">
+    <div className="group relative flex flex-col overflow-hidden rounded-lg bg-muted p-1.5 transition-colors hover:bg-accent">
       <button
         type="button"
         onClick={onOpen}

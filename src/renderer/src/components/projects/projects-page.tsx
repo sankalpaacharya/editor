@@ -77,7 +77,7 @@ export function ProjectsPage({ onOpen }: { onOpen: (project: OpenProject) => voi
       <main
         {...dropProps}
         className={cn(
-          'flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-card',
+          'flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-card',
           dropping && 'ring-2 ring-brand/60'
         )}
       >

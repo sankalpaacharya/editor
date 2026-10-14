@@ -118,7 +118,7 @@ export function Preview({
           <div
             ref={frameRef}
             className={cn(
-              'relative overflow-hidden rounded-xl bg-black',
+              'relative overflow-hidden rounded-lg bg-black',
               dropping && 'ring-2 ring-brand/70'
             )}
             style={frame}
