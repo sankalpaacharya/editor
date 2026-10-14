@@ -46,6 +46,9 @@ describe('editSequence', () => {
     sequence = editSequence(sequence, { type: 'moveClip', clipId: 'b', toIndex: 0 })
     expect(sequence.clips.map((clip) => clip.id)).toEqual(['b', 'a'])
 
+    sequence = editSequence(sequence, { type: 'duplicateClip', clipId: 'b', newClipId: 'c' })
+    expect(sequence.clips.map((clip) => clip.id)).toEqual(['b', 'c', 'a'])
+
     sequence = editSequence(sequence, { type: 'removeMedia', mediaId: B.id })
     expect(sequence.clips.map((clip) => clip.id)).toEqual(['a'])
   })

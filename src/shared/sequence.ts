@@ -129,6 +129,7 @@ export type SequenceAction =
   | { type: 'setSpeed'; clipId: string; speed: number }
   | { type: 'setVolume'; clipId: string; volume: number }
   | { type: 'removeClip'; clipId: string }
+  | { type: 'duplicateClip'; clipId: string; newClipId: string }
   | { type: 'moveClip'; clipId: string; toIndex: number }
   | { type: 'addOverlay'; overlay: Overlay }
   | { type: 'updateOverlay'; overlay: Overlay }
@@ -199,6 +200,12 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
     }
     case 'removeClip':
       return { ...sequence, clips: sequence.clips.filter((clip) => clip.id !== action.clipId) }
+    case 'duplicateClip': {
+      const index = sequence.clips.findIndex((clip) => clip.id === action.clipId)
+      if (index === -1) return sequence
+      const copy = { ...sequence.clips[index], id: action.newClipId }
+      return { ...sequence, clips: sequence.clips.toSpliced(index + 1, 0, copy) }
+    }
     case 'moveClip': {
       const from = sequence.clips.findIndex((clip) => clip.id === action.clipId)
       if (from === -1) return sequence
