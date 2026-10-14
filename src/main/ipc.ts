@@ -43,7 +43,7 @@ async function importInto(
     void dialog.showMessageBox(windowOf(event), {
       type: 'warning',
       message: `${skipped.length} file${skipped.length === 1 ? '' : 's'} could not be imported.`,
-      detail: `Only videos and images that ffprobe can read are supported.\n\n${skipped.join('\n')}`
+      detail: skipped.join('\n\n')
     })
   }
   return imported

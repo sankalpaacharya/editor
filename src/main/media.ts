@@ -76,9 +76,12 @@ export async function importMedia(
   const reused = paths.flatMap((path) => existing.get(resolve(path)) ?? [])
   const fresh = paths.filter((path) => !existing.has(resolve(path)))
   const probes = await Promise.allSettled(fresh.map((path) => probe(path)))
-  const skipped = fresh
-    .filter((_path, i) => probes[i].status === 'rejected')
-    .map((path) => basename(path))
+  const skipped = fresh.flatMap((path, i) => {
+    const result = probes[i]
+    if (result.status === 'fulfilled') return []
+    const reason = result.reason instanceof Error ? result.reason.message : String(result.reason)
+    return [`${basename(path)}: ${reason.split('\n')[0]}`]
+  })
   const found = probes.flatMap((result, i) =>
     result.status === 'fulfilled' ? [{ item: result.value, path: resolve(fresh[i]) }] : []
   )
