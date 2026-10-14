@@ -4,6 +4,7 @@ import { app, BrowserWindow, net, protocol, shell } from 'electron'
 import { MEDIA_SCHEME } from '../shared/api'
 import { resolveAsset } from './assets'
 import { registerIpc } from './ipc'
+import { setApplicationMenu } from './menu'
 
 protocol.registerSchemesAsPrivileged([
   { scheme: MEDIA_SCHEME, privileges: { standard: true, secure: true, stream: true } }
@@ -17,7 +18,6 @@ function createWindow(): void {
     minHeight: 600,
     show: false,
     backgroundColor: '#1c1917',
-    autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -47,6 +47,7 @@ app.whenReady().then(() => {
     })
   })
   registerIpc()
+  setApplicationMenu()
   createWindow()
 
   app.on('activate', () => {

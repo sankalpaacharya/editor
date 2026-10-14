@@ -18,7 +18,8 @@
     "dist": "pnpm build && electron-builder",
     "dist:linux": "pnpm build && electron-builder --linux AppImage",
     "dist:mac": "pnpm build && electron-builder --mac dmg",
-    "dist:win": "pnpm build && electron-builder --win nsis"
+    "dist:win": "pnpm build && electron-builder --win nsis",
+    "release": "pnpm build && electron-builder --publish always"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -33,6 +34,7 @@
     "@hugeicons/react": "^1.1.10",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
+    "electron-updater": "^6.8.9",
     "ffmpeg-static": "5.2.0",
     "ffprobe-static": "^3.1.0",
     "next-themes": "^0.4.6",

@@ -16,9 +16,15 @@ extraResources:
     to: fonts
 mac:
   category: public.app-category.video
-  target: dmg
+  target:
+    - dmg
+    - zip
 win:
   target: nsis
 linux:
   category: AudioVideo
   target: AppImage
+publish:
+  provider: github
+  owner: sankalpaacharya
+  repo: editor
