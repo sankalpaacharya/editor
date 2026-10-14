@@ -109,6 +109,15 @@
   textarea {
     @apply select-text;
   }
+  button:not(:disabled),
+  [role='button'],
+  [role='menuitem'],
+  [role='tab'],
+  [role='slider'],
+  label[for],
+  a[href] {
+    cursor: pointer;
+  }
   html {
     @apply font-sans;
   }
