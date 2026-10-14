@@ -17,6 +17,7 @@ interface OverlayRowProps {
   duration: number
   selection: Selection
   onSelect: (selection: Selection) => void
+  onSeek: (clientX: number) => void
   edit: Edit
 }
 
@@ -29,6 +30,7 @@ export function OverlayRow({
   duration,
   selection,
   onSelect,
+  onSeek,
   edit
 }: OverlayRowProps) {
   const layout = overlayLayout(overlays)
@@ -38,19 +40,27 @@ export function OverlayRow({
     onSelect({ kind: 'overlay', id: overlay.id })
     const coalesce = crypto.randomUUID()
     const length = overlay.end - overlay.start
-    trackPointer(event, (_move, dx) => {
-      const delta = dx / pps
-      let { start, end } = overlay
-      if (mode === 'move') {
-        start = clamp(overlay.start + delta, 0, Math.max(duration - length, 0))
-        end = start + length
-      } else if (mode === 'start') {
-        start = clamp(overlay.start + delta, 0, overlay.end - MIN_CLIP_LENGTH)
-      } else {
-        end = clamp(overlay.end + delta, overlay.start + MIN_CLIP_LENGTH, duration)
+    let moved = false
+    trackPointer(
+      event,
+      (_move, dx) => {
+        moved ||= dx !== 0
+        const delta = dx / pps
+        let { start, end } = overlay
+        if (mode === 'move') {
+          start = clamp(overlay.start + delta, 0, Math.max(duration - length, 0))
+          end = start + length
+        } else if (mode === 'start') {
+          start = clamp(overlay.start + delta, 0, overlay.end - MIN_CLIP_LENGTH)
+        } else {
+          end = clamp(overlay.end + delta, overlay.start + MIN_CLIP_LENGTH, duration)
+        }
+        edit({ type: 'updateOverlay', overlay: { ...overlay, start, end } }, coalesce)
+      },
+      (end) => {
+        if (!moved && mode === 'move') onSeek(end.clientX)
       }
-      edit({ type: 'updateOverlay', overlay: { ...overlay, start, end } }, coalesce)
-    })
+    )
   }
 
   return (

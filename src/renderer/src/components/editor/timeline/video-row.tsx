@@ -32,6 +32,7 @@ interface VideoRowProps {
   drag: ClipDrag | null
   onDrag: (drag: ClipDrag | null) => void
   onSelect: (selection: Selection) => void
+  onSeek: (clientX: number) => void
   edit: Edit
 }
 
@@ -44,6 +45,7 @@ export function VideoRow({
   drag,
   onDrag,
   onSelect,
+  onSeek,
   edit
 }: VideoRowProps) {
   function pressClip(event: PointerEvent<HTMLDivElement>, clip: Clip, index: number) {
@@ -56,9 +58,9 @@ export function VideoRow({
         dragging ||= Math.abs(dx) > DRAG_THRESHOLD
         if (dragging) onDrag({ clipId: clip.id, dx })
       },
-      (_end, dx) => {
+      (end, dx) => {
         onDrag(null)
-        if (!dragging) return
+        if (!dragging) return onSeek(end.clientX)
         const center = starts[index] + timelineLength(clip) / 2 + dx / pps
         const toIndex = insertionIndex(clips, center, index)
         if (toIndex !== index) edit({ type: 'moveClip', clipId: clip.id, toIndex })

@@ -34,11 +34,13 @@ import type { MediaId, MediaItem, Sequence } from '../../../../../shared/sequenc
 import { draggedMediaId, isImageDrag, isMediaDrag } from '@/lib/media-drag'
 import { trackPointer } from '@/lib/pointer'
 import type { Selection } from '@/lib/selection'
+import { clamp } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 const MAX_ZOOM_FACTOR = 64
 const EMPTY_PIXELS_PER_SECOND = 40
 const FOLLOW_MARGIN = 24
+const WHEEL_ZOOM_RATE = 0.002
 
 interface TimelineProps {
   sequence: Sequence
@@ -90,18 +92,49 @@ export function Timeline({
   const trackWidth = Math.max(Math.ceil(duration * pps) + TAIL, Math.floor(trackViewport))
   const starts = clipStarts(clips)
 
-  function zoomTo(next: number) {
+  function zoomTo(next: number, anchor?: { time: number; offset: number }) {
     const scroller = scrollRef.current
     setZoom(next)
     if (!scroller) return
     const visible = scroller.clientWidth - GUTTER
     const offset = playhead * pps - scroller.scrollLeft
-    const keep = offset >= 0 && offset <= visible ? offset : visible / 2
+    const keep = anchor ?? {
+      time: playhead,
+      offset: offset >= 0 && offset <= visible ? offset : visible / 2
+    }
     const nextPps = Math.max(fit, 1) * MAX_ZOOM_FACTOR ** next
     requestAnimationFrame(() => {
-      scroller.scrollLeft = playhead * nextPps - keep
+      scroller.scrollLeft = keep.time * nextPps - keep.offset
     })
   }
+
+  const onWheel = useRef<(event: WheelEvent) => void>(() => {})
+  useEffect(() => {
+    onWheel.current = (event) => {
+      const scroller = scrollRef.current
+      if (!scroller) return
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault()
+        const offset = event.clientX - scroller.getBoundingClientRect().left - GUTTER
+        const next = clamp(zoom - event.deltaY * WHEEL_ZOOM_RATE, 0, 1)
+        zoomTo(next, { time: timeAt(event.clientX), offset })
+      } else if (
+        Math.abs(event.deltaY) > Math.abs(event.deltaX) &&
+        !event.shiftKey &&
+        scroller.scrollHeight <= scroller.clientHeight
+      ) {
+        event.preventDefault()
+        scroller.scrollLeft += event.deltaY
+      }
+    }
+  })
+  useEffect(() => {
+    const scroller = scrollRef.current
+    if (!scroller) return
+    const listener = (event: WheelEvent) => onWheel.current(event)
+    scroller.addEventListener('wheel', listener, { passive: false })
+    return () => scroller.removeEventListener('wheel', listener)
+  }, [])
 
   useEffect(() => {
     const scroller = scrollRef.current
@@ -125,6 +158,18 @@ export function Timeline({
     seek(timeAt(event.clientX))
     trackPointer(event, (move) => seek(timeAt(move.clientX)))
   }
+
+  function pressTracks(event: PointerEvent<HTMLDivElement>) {
+    const scroller = event.currentTarget
+    const { left, top } = scroller.getBoundingClientRect()
+    const onScrollbar =
+      event.clientX - left >= scroller.clientWidth || event.clientY - top >= scroller.clientHeight
+    if (event.button !== 0 || onScrollbar) return
+    onSelect(null)
+    scrub(event)
+  }
+
+  const seekAt = (clientX: number) => seek(timeAt(clientX))
 
   function targetFor(event: DragEvent): DropTarget {
     const time = timeAt(event.clientX)
@@ -155,7 +200,7 @@ export function Timeline({
     <Panel className="h-[300px] shrink-0">
       <div
         ref={scrollerRef}
-        onPointerDown={() => onSelect(null)}
+        onPointerDown={pressTracks}
         onDragOver={(event) => {
           if (!isMediaDrag(event)) return
           event.preventDefault()
@@ -179,6 +224,7 @@ export function Timeline({
               duration={duration}
               selection={selection}
               onSelect={onSelect}
+              onSeek={seekAt}
               edit={edit}
             />
           </Row>
@@ -192,6 +238,7 @@ export function Timeline({
               drag={drag}
               onDrag={setDrag}
               onSelect={onSelect}
+              onSeek={seekAt}
               edit={edit}
             />
           </Row>
@@ -204,6 +251,7 @@ export function Timeline({
               selection={selection}
               drag={drag}
               onSelect={onSelect}
+              onSeek={seekAt}
             />
           </Row>
           {dropX !== null && (
@@ -277,8 +325,9 @@ function Playhead({
     >
       <div
         onPointerDown={onScrub}
-        className="pointer-events-auto absolute top-2 left-1/2 size-2.5 -translate-x-1/2 cursor-ew-resize rounded-full bg-white shadow-[0_0_0_3px_var(--card)]"
+        className="pointer-events-auto absolute inset-y-0 left-1/2 w-3 -translate-x-1/2 cursor-ew-resize"
       />
+      <div className="absolute top-2 left-1/2 size-2.5 -translate-x-1/2 rounded-full bg-white shadow-[0_0_0_3px_var(--card)]" />
     </div>
   )
 }

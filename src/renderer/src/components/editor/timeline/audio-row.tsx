@@ -12,6 +12,7 @@ import {
   type MediaId,
   type MediaItem
 } from '../../../../../shared/sequence'
+import { trackPointer } from '@/lib/pointer'
 import type { Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
 
@@ -23,6 +24,7 @@ interface AudioRowProps {
   selection: Selection
   drag: ClipDrag | null
   onSelect: (selection: Selection) => void
+  onSeek: (clientX: number) => void
 }
 
 export function AudioRow({
@@ -32,7 +34,8 @@ export function AudioRow({
   pixelsPerSecond: pps,
   selection,
   drag,
-  onSelect
+  onSelect,
+  onSeek
 }: AudioRowProps) {
   return (
     <div className="relative rounded-md bg-white/[0.02]" style={{ height: AUDIO_ROW_HEIGHT }}>
@@ -43,9 +46,11 @@ export function AudioRow({
         return (
           <div
             key={clip.id}
-            onPointerDown={(event: PointerEvent) => {
+            onPointerDown={(event: PointerEvent<HTMLDivElement>) => {
               event.stopPropagation()
               onSelect({ kind: 'clip', id: clip.id })
+              onSeek(event.clientX)
+              trackPointer(event, (move) => onSeek(move.clientX))
             }}
             className={cn(
               'absolute inset-y-0 overflow-hidden rounded-md bg-track-audio',
