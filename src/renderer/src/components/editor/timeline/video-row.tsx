@@ -4,6 +4,10 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { Edit } from '@/components/editor/editor'
 import {
   clipBox,
+  magnetIndex,
+  magnetStarts,
+  MAKE_ROOM,
+  shownStart,
   snapEdges,
   snapShift,
   VIDEO_ROW_HEIGHT,
@@ -59,26 +63,29 @@ export function VideoRow({
   function pressClip(event: PointerEvent<HTMLDivElement>, clip: Clip, index: number) {
     event.stopPropagation()
     onSelect({ kind: 'clip', id: clip.id }, isAdditive(event))
-    const length = timelineLength(clip)
-    const targets = snapping ? snapEdges(clips, index, playhead) : []
     let dragging = false
     let start = starts[index]
+    let slot = index
     trackPointer(
       event,
       (_move, dx) => {
         dragging ||= Math.abs(dx) > DRAG_THRESHOLD
         if (!dragging) return
-        const raw = starts[index] + dx / pps
-        const snap = snapShift([raw, raw + length], targets, pps)
-        start = Math.max(raw + snap.shift, 0)
-        onSnapGuide(snap.at)
-        onDrag({ clipId: clip.id, dx: (start - starts[index]) * pps })
+        start = Math.max(starts[index] + dx / pps, 0)
+        // With the magnet on, the other clips close up around the slot the clip will land in.
+        if (snapping) {
+          slot = magnetIndex(clips, index, start)
+          onDrag({ clipId: clip.id, start, starts: magnetStarts(clips, clip.id, slot) })
+        } else onDrag({ clipId: clip.id, start, starts: null })
       },
       (end) => {
         onDrag(null)
-        onSnapGuide(null)
         if (!dragging) return onSeek(end.clientX)
-        edit({ type: 'moveClip', clipId: clip.id, start })
+        edit(
+          snapping
+            ? { type: 'reorderClip', clipId: clip.id, index: slot }
+            : { type: 'moveClip', clipId: clip.id, start }
+        )
       }
     )
   }
@@ -115,7 +122,7 @@ export function VideoRow({
   return (
     <div className="relative rounded-md bg-white/[0.02]" style={{ height: VIDEO_ROW_HEIGHT }}>
       {clips.map((clip, index) => {
-        if (clip.gap === 0) return null
+        if (clip.gap === 0 || drag?.starts) return null
         const selected = isSelected(selection, 'gap', clip.id)
         return (
           <div
@@ -138,8 +145,8 @@ export function VideoRow({
       {clips.map((clip, index) => {
         const media = mediaById.get(clip.mediaId)
         const selected = isSelected(selection, 'clip', clip.id)
-        const offset = drag?.clipId === clip.id ? drag.dx : 0
-        const box = clipBox(starts[index], timelineLength(clip), pps)
+        const dragged = drag?.clipId === clip.id
+        const box = clipBox(shownStart(drag, clip, index, starts), timelineLength(clip), pps)
         return (
           <div
             key={clip.id}
@@ -147,9 +154,10 @@ export function VideoRow({
             onPointerDown={(event) => pressClip(event, clip, index)}
             className={cn(
               'absolute inset-y-0 overflow-hidden rounded-md bg-muted',
-              offset !== 0 && 'z-10 opacity-85 shadow-lg'
+              dragged && 'z-10 opacity-85 shadow-lg',
+              drag?.starts && !dragged && MAKE_ROOM
             )}
-            style={{ ...box, transform: offset ? `translateX(${offset}px)` : undefined }}
+            style={box}
           >
             {media?.kind === 'video' && (
               <Filmstrip clip={clip} media={media} pps={pps} width={Number(box.width)} />
