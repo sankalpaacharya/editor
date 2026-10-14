@@ -20,6 +20,9 @@ importers:
       '@hugeicons/react':
         specifier: ^1.1.10
         version: 1.1.10(react@19.3.0)
+      '@uiw/react-color-colorful':
+        specifier: ^2.10.3
+        version: 2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -1890,6 +1893,46 @@ packages:
 
   '@types/yauzl@2.10.3':
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
+
+  '@uiw/color-convert@2.10.3':
+    resolution: {integrity: sha512-5tIjb4CZzGR7K3Sshswsuuc6FOAFNFwjtF0hkhKH3f+CMauC4Akv7LPq6o9v68S7dIAeKvfj8qWg5Tc2I1TVSA==}
+    peerDependencies:
+      '@babel/runtime': '>=7.19.0'
+
+  '@uiw/react-color-alpha@2.10.3':
+    resolution: {integrity: sha512-82wtNRmEW5uZV2hmw5SYZKPIZjN6aqm8/CZOg8KXfx8eoIqpbjrRBwABggPO/O5Dj2JNAPC4eYyHslE24Pxy8w==}
+    peerDependencies:
+      '@babel/runtime': '>=7.19.0'
+      react: '>=16.9.0'
+      react-dom: '>=16.9.0'
+
+  '@uiw/react-color-colorful@2.10.3':
+    resolution: {integrity: sha512-hnWr03wKNbJjNEZ4SFnwoeKNMtS2DR7rXsCv0bt17DVdBgYPZmuMTIwAR6nKFExdOwgOwXloP5KGESJYwyp2YQ==}
+    peerDependencies:
+      '@babel/runtime': '>=7.19.0'
+      react: '>=16.9.0'
+      react-dom: '>=16.9.0'
+
+  '@uiw/react-color-hue@2.10.3':
+    resolution: {integrity: sha512-dlaLaQEPXvaywc8xS8DgiYIbq4qUuI8fyERR7/bRsRXCTA9x4tFAD+lWenXcZBEhQh8HfZd1MhbvjcLzs7xpFg==}
+    peerDependencies:
+      '@babel/runtime': '>=7.19.0'
+      react: '>=16.9.0'
+      react-dom: '>=16.9.0'
+
+  '@uiw/react-color-saturation@2.10.3':
+    resolution: {integrity: sha512-iRIwNx3UTZrpV5hoQ5mcsZ8ahTXcMaGNvg8iS9JUByg+1PljwWcnqq5RNrRZJXPx+vryavefMkJLKHcPb9BLvQ==}
+    peerDependencies:
+      '@babel/runtime': '>=7.19.0'
+      react: '>=16.9.0'
+      react-dom: '>=16.9.0'
+
+  '@uiw/react-drag-event-interactive@2.10.3':
+    resolution: {integrity: sha512-veLm9HF1cairiYbGxcALYVu51T4XAzDz8fmtQ0SiLVFHBX74+iUGo2jArS/XALFBnapsLYTAWTnHXxe38mC/Vw==}
+    peerDependencies:
+      '@babel/runtime': '>=7.19.0'
+      react: '>=16.9.0'
+      react-dom: '>=16.9.0'
 
   '@vitejs/plugin-react@5.2.0':
     resolution: {integrity: sha512-YmKkfhOAi3wsB1PhJq5Scj3GXMn3WvtQ/JC0xoopuHoXSdmtdStOpFrYaT1kie2YgFBcIe64ROzMYRjCrYOdYw==}
@@ -5860,6 +5903,50 @@ snapshots:
     dependencies:
       '@types/node': 24.19.2
     optional: true
+
+  '@uiw/color-convert@2.10.3(@babel/runtime@8.0.7)':
+    dependencies:
+      '@babel/runtime': 8.0.7
+
+  '@uiw/react-color-alpha@2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      '@babel/runtime': 8.0.7
+      '@uiw/color-convert': 2.10.3(@babel/runtime@8.0.7)
+      '@uiw/react-drag-event-interactive': 2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
+
+  '@uiw/react-color-colorful@2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      '@babel/runtime': 8.0.7
+      '@uiw/color-convert': 2.10.3(@babel/runtime@8.0.7)
+      '@uiw/react-color-alpha': 2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@uiw/react-color-hue': 2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@uiw/react-color-saturation': 2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
+
+  '@uiw/react-color-hue@2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      '@babel/runtime': 8.0.7
+      '@uiw/color-convert': 2.10.3(@babel/runtime@8.0.7)
+      '@uiw/react-color-alpha': 2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
+
+  '@uiw/react-color-saturation@2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      '@babel/runtime': 8.0.7
+      '@uiw/color-convert': 2.10.3(@babel/runtime@8.0.7)
+      '@uiw/react-drag-event-interactive': 2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
+
+  '@uiw/react-drag-event-interactive@2.10.3(@babel/runtime@8.0.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      '@babel/runtime': 8.0.7
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
 
   '@vitejs/plugin-react@5.2.0(vite@7.3.7(@types/node@24.19.2)(jiti@2.7.0)(lightningcss@1.32.0))':
     dependencies:

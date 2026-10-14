@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Colorful from '@uiw/react-color-colorful'
 import { Textarea } from '@/components/ui/textarea'
 import { Field, NumberField, PercentSlider, Section } from '@/components/editor/inspector/fields'
 import { useCoalesceKey } from '@/hooks/use-coalesce-key'
@@ -45,24 +46,10 @@ export function TextInspector({ overlay, onChange }: OverlayInspectorProps<TextO
             />
           )}
         </Field>
-        <Field label="Color">
-          {(id) => (
-            <label className="flex h-7 items-center gap-2 rounded-md border bg-background/50 px-1.5">
-              <input
-                id={id}
-                type="color"
-                value={overlay.color}
-                onChange={(event) =>
-                  onChange({ ...overlay, color: event.target.value }, `color:${overlay.id}`)
-                }
-                className="size-4 cursor-pointer rounded-[3px] border-0 bg-transparent p-0 [&::-webkit-color-swatch]:rounded-[3px] [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0"
-              />
-              <span className="text-xs text-muted-foreground uppercase tabular-nums">
-                {overlay.color}
-              </span>
-            </label>
-          )}
-        </Field>
+        <ColorField
+          value={overlay.color}
+          onChange={(color) => onChange({ ...overlay, color }, `color:${overlay.id}`)}
+        />
       </Section>
     </>
   )
@@ -89,5 +76,52 @@ export function ImageInspector({
         </Field>
       </Section>
     </>
+  )
+}
+
+const SWATCHES = ['#ffffff', '#000000', '#ffd400', '#ff4d4f', '#4dabff', '#52c41a', '#b37feb']
+
+function ColorField({ value, onChange }: { value: string; onChange: (color: string) => void }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-[52px_1fr] items-center gap-2">
+        <span className="text-xs text-muted-foreground">Color</span>
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+          className="flex h-7 items-center gap-2 rounded-md bg-input/50 px-1.5 text-left outline-none hover:bg-input focus-visible:ring-2 focus-visible:ring-ring/40"
+        >
+          <span
+            className="size-4 rounded-[3px] ring-1 ring-white/20"
+            style={{ background: value }}
+          />
+          <span className="text-xs text-muted-foreground uppercase tabular-nums">{value}</span>
+        </button>
+      </div>
+      {open && (
+        <div className="flex flex-col gap-2">
+          <Colorful
+            color={value}
+            disableAlpha
+            onChange={(color) => onChange(color.hex)}
+            style={{ width: '100%' }}
+          />
+          <div className="flex gap-1.5">
+            {SWATCHES.map((swatch) => (
+              <button
+                key={swatch}
+                type="button"
+                aria-label={swatch}
+                onClick={() => onChange(swatch)}
+                className="size-5 rounded-[3px] ring-1 ring-white/20 outline-none hover:ring-white/60 focus-visible:ring-2 focus-visible:ring-ring"
+                style={{ background: swatch }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
