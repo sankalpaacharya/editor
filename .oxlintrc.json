@@ -22,5 +22,5 @@
     "node": true,
     "es2024": true
   },
-  "ignorePatterns": ["out", "release", "node_modules", ".claude", "src/renderer/src/components/ui"]
+  "ignorePatterns": ["out", "release", "node_modules", ".claude", "src/renderer/src/components/ui", "src/renderer/src/hooks/use-audio-config.tsx"]
 }
