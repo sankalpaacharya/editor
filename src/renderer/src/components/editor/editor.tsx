@@ -197,7 +197,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
     <div
       {...dropProps}
       className={cn(
-        'flex h-screen gap-2 py-2 pr-2 outline-1 -outline-offset-1 outline-transparent',
+        'flex h-screen gap-2 p-2 outline-1 -outline-offset-1 outline-transparent',
         dropping && 'outline-brand/60'
       )}
     >

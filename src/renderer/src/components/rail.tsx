@@ -23,7 +23,7 @@ async function checkForUpdates() {
 export function Rail({ groups, onHome }: { groups: RailItem[][]; onHome?: () => void }) {
   const mark = <img src={logo} alt="" className="size-8 rounded-lg" draggable={false} />
   return (
-    <nav className="flex w-16 shrink-0 flex-col items-center gap-1 py-2">
+    <nav className="flex w-[72px] shrink-0 flex-col items-center gap-1 rounded-lg bg-card py-3">
       {onHome ? (
         <button
           type="button"
@@ -67,13 +67,13 @@ function RailButton({ label, icon, active, onSelect }: RailItem) {
       aria-current={active ? 'page' : undefined}
       className={cn(
         'group flex w-14 flex-col items-center gap-1 py-1 text-[10px] font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg',
-        active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+        active ? 'text-brand' : 'text-muted-foreground hover:text-foreground'
       )}
     >
       <span
         className={cn(
           'flex size-9 items-center justify-center rounded-lg transition-colors',
-          active ? 'bg-secondary' : 'group-hover:bg-secondary/60'
+          active ? 'bg-brand/15' : 'group-hover:bg-secondary'
         )}
       >
         <HugeiconsIcon icon={icon} strokeWidth={1.6} className="size-[18px]" />

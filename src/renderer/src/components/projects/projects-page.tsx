@@ -72,7 +72,7 @@ export function ProjectsPage({ onOpen }: { onOpen: (project: OpenProject) => voi
   )
 
   return (
-    <div className="flex h-screen gap-2 py-2 pr-2">
+    <div className="flex h-screen gap-2 p-2">
       <Rail groups={[[{ label: 'Projects', icon: Folder01Icon, active: true, onSelect() {} }]]} />
       <main
         {...dropProps}
