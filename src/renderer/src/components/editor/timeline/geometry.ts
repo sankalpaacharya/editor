@@ -13,6 +13,8 @@ export const RULER_HEIGHT = 24
 export const VIDEO_ROW_HEIGHT = 52
 export const AUDIO_ROW_HEIGHT = 36
 export const ROW_GAP = 6
+// Space between the picture tracks and the audio tracks, with a divider line in the middle.
+export const GROUP_GAP = 17
 export const CLIP_GAP = 4
 const MAX_OVERLAY_LANES = 3
 const OVERLAY_LANE_GAP = 2

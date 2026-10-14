@@ -20,7 +20,7 @@ import type { ImageMedia, MediaId, MediaItem, SequenceAction } from '../../../..
 import { errorMessage } from '@/lib/format'
 import { historyReducer, initialHistory } from '@/lib/history'
 import { newImageOverlay, newTextOverlay, type TextPreset } from '@/lib/overlays'
-import type { Selection } from '@/lib/selection'
+import { nextSelection, onlySelected, type Select, type Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
 
 export type Edit = (action: SequenceAction, coalesce?: string) => void
@@ -36,7 +36,9 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
   const [name, setName] = useState(project.name)
   const [media, setMedia] = useState<MediaItem[]>(project.media)
   const [missing, setMissing] = useState<ReadonlySet<MediaId>>(new Set(project.missingMedia))
-  const [selection, setSelection] = useState<Selection>(null)
+  const [selection, setSelection] = useState<Selection>([])
+  const select: Select = (item, additive) =>
+    setSelection((current) => nextSelection(current, item, additive))
   const [master, setMaster] = useState<MasterVolume>({ level: 1, muted: false })
   const audible = !master.muted && sequence.tracks.audio.enabled
   const playback = usePlayback(sequence.clips, audible ? master.level : 0)
@@ -79,14 +81,14 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
       await window.editor.removeMedia(project.id, mediaId)
       setMedia((current) => current.filter((item) => item.id !== mediaId))
       dispatch({ type: 'forgetMedia', mediaId })
-      setSelection(null)
+      setSelection([])
     })
 
   function addMedia(item: MediaItem, at: { index?: number; time?: number } = {}) {
     if (item.kind === 'video') {
       const clipId = crypto.randomUUID()
       edit({ type: 'addClip', clipId, media: item, index: at.index })
-      setSelection({ kind: 'clip', id: clipId })
+      setSelection([{ kind: 'clip', id: clipId }])
     } else {
       addImage(item, at.time ?? playhead)
     }
@@ -99,18 +101,19 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
     }
     const overlay = newImageOverlay(image, time, duration, position)
     edit({ type: 'addOverlay', overlay })
-    setSelection({ kind: 'overlay', id: overlay.id })
+    setSelection([{ kind: 'overlay', id: overlay.id }])
   }
 
   function addText(preset: TextPreset) {
     const overlay = newTextOverlay(preset, sequence.format, playhead, duration)
     edit({ type: 'addOverlay', overlay })
-    setSelection({ kind: 'overlay', id: overlay.id })
+    setSelection([{ kind: 'overlay', id: overlay.id }])
   }
 
   const duplicate = () => {
-    if (selection?.kind === 'clip') {
-      edit({ type: 'duplicateClip', clipId: selection.id, newClipId: crypto.randomUUID() })
+    const only = onlySelected(selection)
+    if (only?.kind === 'clip') {
+      edit({ type: 'duplicateClip', clipId: only.id, newClipId: crypto.randomUUID() })
     }
   }
 
@@ -118,12 +121,21 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
 
   function deleteSelection() {
     const { tracks } = sequence
-    if (selection?.kind === 'overlay' ? tracks.overlays.locked : tracks.video.locked) return
-    if (selection?.kind === 'clip') edit({ type: 'removeClip', clipId: selection.id })
-    else if (selection?.kind === 'overlay') edit({ type: 'removeOverlay', overlayId: selection.id })
-    else if (selection?.kind === 'gap') edit({ type: 'closeGap', clipId: selection.id })
-    setSelection(null)
+    const batch = crypto.randomUUID()
+    for (const { kind, id } of selection) {
+      if (kind === 'overlay' ? tracks.overlays.locked : tracks.video.locked) continue
+      if (kind === 'clip') edit({ type: 'removeClip', clipId: id }, batch)
+      else if (kind === 'overlay') edit({ type: 'removeOverlay', overlayId: id }, batch)
+      else edit({ type: 'closeGap', clipId: id }, batch)
+    }
+    setSelection([])
   }
+
+  const selectAll = () =>
+    setSelection([
+      ...sequence.clips.map((clip) => ({ kind: 'clip' as const, id: clip.id })),
+      ...sequence.overlays.map((overlay) => ({ kind: 'overlay' as const, id: overlay.id }))
+    ])
 
   const undo = () => dispatch({ type: 'undo' })
   const redo = () => dispatch({ type: 'redo' })
@@ -134,6 +146,8 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
     pause: () => playback.playing && playback.toggle(),
     split,
     duplicate,
+    selectAll,
+    clearSelection: () => setSelection([]),
     deleteSelection,
     undo,
     redo,
@@ -205,7 +219,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
             activeMediaId={playback.activeMediaId}
             registerVideo={playback.registerVideo}
             selection={selection}
-            onSelect={setSelection}
+            onSelect={select}
             edit={edit}
             onDropImage={(image, position) => addImage(image, playhead, position)}
             master={master}
@@ -236,7 +250,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
           mediaById={mediaById}
           playback={playback}
           selection={selection}
-          onSelect={setSelection}
+          onSelect={select}
           edit={edit}
           canUndo={history.past.length > 0}
           canRedo={history.future.length > 0}

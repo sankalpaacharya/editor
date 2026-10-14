@@ -9,7 +9,7 @@ import { ExportHistory } from '@/components/editor/inspector/export-history'
 import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
 import type { ProjectId } from '../../../../../shared/api'
 import type { MediaId, MediaItem, Overlay, Sequence } from '../../../../../shared/sequence'
-import type { Selection } from '@/lib/selection'
+import { onlySelected, type Selection } from '@/lib/selection'
 
 interface InspectorProps {
   projectId: ProjectId
@@ -32,10 +32,10 @@ export function Inspector({
   edit,
   onDelete
 }: InspectorProps) {
-  const clip =
-    selection?.kind === 'clip' ? sequence.clips.find((c) => c.id === selection.id) : undefined
+  const only = onlySelected(selection)
+  const clip = only?.kind === 'clip' ? sequence.clips.find((c) => c.id === only.id) : undefined
   const overlay =
-    selection?.kind === 'overlay' ? sequence.overlays.find((o) => o.id === selection.id) : undefined
+    only?.kind === 'overlay' ? sequence.overlays.find((o) => o.id === only.id) : undefined
   const updateOverlay = (next: Overlay, coalesce?: string) =>
     edit({ type: 'updateOverlay', overlay: next }, coalesce)
 

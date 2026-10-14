@@ -20,7 +20,7 @@ import {
 } from '../../../../../shared/sequence'
 import { clamp } from '@/lib/format'
 import { trackPointer } from '@/lib/pointer'
-import type { Selection } from '@/lib/selection'
+import { isAdditive, isSelected, type Select, type Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
 
 const DRAG_THRESHOLD = 3
@@ -33,7 +33,7 @@ interface VideoRowProps {
   selection: Selection
   drag: ClipDrag | null
   onDrag: (drag: ClipDrag | null) => void
-  onSelect: (selection: Selection) => void
+  onSelect: Select
   onSeek: (clientX: number) => void
   playhead: number
   snapping: boolean
@@ -58,7 +58,7 @@ export function VideoRow({
 }: VideoRowProps) {
   function pressClip(event: PointerEvent<HTMLDivElement>, clip: Clip, index: number) {
     event.stopPropagation()
-    onSelect({ kind: 'clip', id: clip.id })
+    onSelect({ kind: 'clip', id: clip.id }, isAdditive(event))
     const length = timelineLength(clip)
     const targets = snapping ? snapEdges(clips, index, playhead) : []
     let dragging = false
@@ -118,13 +118,13 @@ export function VideoRow({
     <div className="relative rounded-md bg-white/[0.02]" style={{ height: VIDEO_ROW_HEIGHT }}>
       {clips.map((clip, index) => {
         if (clip.gap === 0) return null
-        const selected = selection?.kind === 'gap' && selection.id === clip.id
+        const selected = isSelected(selection, 'gap', clip.id)
         return (
           <div
             key={`gap-${clip.id}`}
             onPointerDown={(event) => {
               event.stopPropagation()
-              onSelect({ kind: 'gap', id: clip.id })
+              onSelect({ kind: 'gap', id: clip.id }, isAdditive(event))
               onSeek(event.clientX)
             }}
             className={cn(
@@ -141,7 +141,7 @@ export function VideoRow({
       })}
       {clips.map((clip, index) => {
         const media = mediaById.get(clip.mediaId)
-        const selected = selection?.kind === 'clip' && selection.id === clip.id
+        const selected = isSelected(selection, 'clip', clip.id)
         const offset = drag?.clipId === clip.id ? drag.dx : 0
         const box = clipBox(starts[index], timelineLength(clip), pps)
         return (

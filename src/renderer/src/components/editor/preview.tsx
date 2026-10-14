@@ -14,7 +14,7 @@ import { useElementSize } from '@/hooks/use-element-size'
 import { clamp } from '@/lib/format'
 import { draggedMediaId, isMediaDrag } from '@/lib/media-drag'
 import { trackPointer } from '@/lib/pointer'
-import type { Selection } from '@/lib/selection'
+import { isAdditive, isSelected, type Select, type Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
 import { VolumeHighIcon, VolumeMute02Icon } from '@hugeicons/core-free-icons'
 import { Slider } from '@/components/ui/slider'
@@ -29,7 +29,7 @@ interface PreviewProps {
   activeMediaId: MediaId | null
   registerVideo: (id: MediaId, video: HTMLVideoElement | null) => void
   selection: Selection
-  onSelect: (selection: Selection) => void
+  onSelect: Select
   edit: Edit
   onDropImage: (image: ImageMedia, position: { x: number; y: number }) => void
   master: MasterVolume
@@ -65,7 +65,7 @@ export function Preview({
   function startDrag(event: PointerEvent<HTMLDivElement>, overlay: Overlay) {
     event.stopPropagation()
     if (sequence.tracks.overlays.locked) return
-    onSelect({ kind: 'overlay', id: overlay.id })
+    onSelect({ kind: 'overlay', id: overlay.id }, isAdditive(event))
     const rect = frameRef.current?.getBoundingClientRect()
     if (!rect) return
     const coalesce = crypto.randomUUID()
@@ -150,7 +150,8 @@ export function Preview({
                   onPointerDown={(event) => startDrag(event, overlay)}
                   className={cn(
                     'absolute cursor-move touch-none select-none',
-                    selection?.id === overlay.id && 'outline-1 outline-offset-2 outline-brand'
+                    isSelected(selection, 'overlay', overlay.id) &&
+                      'outline-1 outline-offset-2 outline-brand'
                   )}
                   style={{
                     left: `${overlay.x * 100}%`,

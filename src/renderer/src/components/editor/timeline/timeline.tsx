@@ -26,6 +26,7 @@ import { Panel } from '@/components/editor/panel'
 import { AudioRow } from '@/components/editor/timeline/audio-row'
 import {
   AUDIO_ROW_HEIGHT,
+  GROUP_GAP,
   GUTTER,
   insertionIndex,
   overlayLayout,
@@ -52,7 +53,7 @@ import {
 } from '../../../../../shared/sequence'
 import { draggedMediaId, isImageDrag, isMediaDrag } from '@/lib/media-drag'
 import { trackPointer } from '@/lib/pointer'
-import type { Selection } from '@/lib/selection'
+import { isAdditive, onlySelected, type Select, type Selection } from '@/lib/selection'
 import { clamp } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -67,7 +68,7 @@ interface TimelineProps {
   mediaById: ReadonlyMap<MediaId, MediaItem>
   playback: ReturnType<typeof usePlayback>
   selection: Selection
-  onSelect: (selection: Selection) => void
+  onSelect: Select
   edit: Edit
   canUndo: boolean
   canRedo: boolean
@@ -203,7 +204,7 @@ export function Timeline({
     const onScrollbar =
       event.clientX - left >= scroller.clientWidth || event.clientY - top >= scroller.clientHeight
     if (event.button !== 0 || onScrollbar) return
-    onSelect(null)
+    onSelect(null, isAdditive(event))
     scrub(event)
   }
 
@@ -288,6 +289,10 @@ export function Timeline({
               edit={edit}
             />
           </Row>
+          <div className="flex items-center" style={{ height: GROUP_GAP - ROW_GAP }}>
+            <div className="sticky left-0 z-10 h-full shrink-0 bg-card" style={{ width: GUTTER }} />
+            <div className="h-px flex-1 bg-border" />
+          </div>
           <Row icon={AudioWave01Icon} label="Audio" track="audio" {...trackProps}>
             <AudioRow
               clips={clips}
@@ -320,7 +325,8 @@ export function Timeline({
                 overlayLayout(overlays).rowHeight +
                 VIDEO_ROW_HEIGHT +
                 AUDIO_ROW_HEIGHT +
-                ROW_GAP * 3
+                ROW_GAP * 2 +
+                GROUP_GAP
               }
               onScrub={scrub}
             />
@@ -330,8 +336,8 @@ export function Timeline({
       <Toolbar
         {...toolbar}
         duration={duration}
-        canDelete={selection !== null}
-        canDuplicate={selection?.kind === 'clip'}
+        canDelete={selection.length > 0}
+        canDuplicate={onlySelected(selection)?.kind === 'clip'}
         zoom={zoom}
         onZoom={zoomTo}
         snapping={snapping}

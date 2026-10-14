@@ -13,7 +13,7 @@ import {
   type MediaItem
 } from '../../../../../shared/sequence'
 import { trackPointer } from '@/lib/pointer'
-import type { Selection } from '@/lib/selection'
+import { isAdditive, isSelected, type Select, type Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
 
 interface AudioRowProps {
@@ -23,7 +23,7 @@ interface AudioRowProps {
   pixelsPerSecond: number
   selection: Selection
   drag: ClipDrag | null
-  onSelect: (selection: Selection) => void
+  onSelect: Select
   onSeek: (clientX: number) => void
 }
 
@@ -48,7 +48,7 @@ export function AudioRow({
             key={clip.id}
             onPointerDown={(event: PointerEvent<HTMLDivElement>) => {
               event.stopPropagation()
-              onSelect({ kind: 'clip', id: clip.id })
+              onSelect({ kind: 'clip', id: clip.id }, isAdditive(event))
               onSeek(event.clientX)
               trackPointer(event, (move) => onSeek(move.clientX))
             }}
@@ -72,7 +72,7 @@ export function AudioRow({
             <div
               className={cn(
                 'pointer-events-none absolute inset-0 rounded-md ring-inset',
-                selection?.kind === 'clip' && selection.id === clip.id
+                isSelected(selection, 'clip', clip.id)
                   ? 'ring-[3px] ring-selection'
                   : 'ring-1 ring-white/20'
               )}

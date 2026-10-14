@@ -7,7 +7,7 @@ import type { MediaId, MediaItem, Overlay } from '../../../../../shared/sequence
 import { MIN_CLIP_LENGTH } from '../../../../../shared/sequence'
 import { clamp } from '@/lib/format'
 import { trackPointer } from '@/lib/pointer'
-import type { Selection } from '@/lib/selection'
+import { isAdditive, isSelected, type Select, type Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
 
 interface OverlayRowProps {
@@ -16,7 +16,7 @@ interface OverlayRowProps {
   pixelsPerSecond: number
   duration: number
   selection: Selection
-  onSelect: (selection: Selection) => void
+  onSelect: Select
   onSeek: (clientX: number) => void
   edit: Edit
 }
@@ -37,7 +37,7 @@ export function OverlayRow({
 
   function press(event: PointerEvent<HTMLElement>, overlay: Overlay, mode: DragMode) {
     event.stopPropagation()
-    onSelect({ kind: 'overlay', id: overlay.id })
+    onSelect({ kind: 'overlay', id: overlay.id }, isAdditive(event))
     const coalesce = crypto.randomUUID()
     const length = overlay.end - overlay.start
     let moved = false
@@ -66,7 +66,7 @@ export function OverlayRow({
   return (
     <div className="relative rounded-md bg-white/[0.02]" style={{ height: layout.rowHeight }}>
       {overlays.map((overlay) => {
-        const selected = selection?.id === overlay.id
+        const selected = isSelected(selection, 'overlay', overlay.id)
         const label =
           overlay.kind === 'text' ? overlay.text : (mediaById.get(overlay.mediaId)?.name ?? 'Image')
         return (
