@@ -44,7 +44,7 @@ export function RailButton({ label, icon, active, onSelect }: RailItem) {
       onClick={onSelect}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'group flex w-12 flex-col items-center gap-1 py-1 text-[10px] font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg',
+        'group flex w-12 flex-col items-center gap-1 py-1 text-2xs font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg',
         active ? 'text-brand' : 'text-muted-foreground hover:text-foreground'
       )}
     >

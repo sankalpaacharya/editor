@@ -40,7 +40,7 @@ export function ProgramMeter({ source }: { source: FrameSource<MeterFrame> }) {
           <LevelMeterScale />
         </LevelMeterChannels>
       </LevelMeter>
-      <div className="mt-1 flex justify-around pr-4 text-[10px] text-muted-foreground">
+      <div className="mt-1 flex justify-around pr-4 text-2xs text-muted-foreground">
         <span>L</span>
         <span>R</span>
       </div>

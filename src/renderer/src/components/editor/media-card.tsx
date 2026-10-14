@@ -70,7 +70,7 @@ export function MediaCard({ item, used, missing, onAdd, onRemove }: MediaCardPro
       </div>
       <span
         className={cn(
-          'truncate text-[11px] leading-4',
+          'truncate text-2xs leading-4',
           missing ? 'text-destructive/80' : 'text-muted-foreground'
         )}
       >

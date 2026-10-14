@@ -82,7 +82,7 @@ export function ProjectsPage({ onOpen }: { onOpen: (project: OpenProject) => voi
         )}
       >
         <header className="flex h-14 shrink-0 items-center gap-2 px-5">
-          <h1 className="text-[15px] font-medium">Projects</h1>
+          <h1 className="text-base font-medium">Projects</h1>
           {projects && projects.length > 0 && (
             <>
               <span className="text-xs text-muted-foreground tabular-nums">{projects.length}</span>

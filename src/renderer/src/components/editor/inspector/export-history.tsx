@@ -40,7 +40,7 @@ export function ExportHistory({ projectId, revision }: { projectId: ProjectId; r
                 <span className="truncate text-xs" title={record.path}>
                   {fileName(record.path)}
                 </span>
-                <span className="text-[11px] text-muted-foreground tabular-nums">
+                <span className="text-2xs text-muted-foreground tabular-nums">
                   {record.missing
                     ? 'File not found'
                     : `${formatDuration(record.duration)} · ${formatAgo(record.createdAt)}`}

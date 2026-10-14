@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 export function Section({ title, children }: { title?: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-2.5 px-4 py-3">
-      {title && <h3 className="text-[13px] font-medium">{title}</h3>}
+      {title && <h3 className="text-sm font-medium">{title}</h3>}
       {children}
     </div>
   )
@@ -71,7 +71,7 @@ export function NumberField({
         className="h-9 rounded-lg border-0 bg-muted px-3 text-xs tabular-nums shadow-none md:text-xs focus-visible:ring-2 focus-visible:ring-ring/40 [&::-webkit-inner-spin-button]:appearance-none"
       />
       {suffix && (
-        <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[11px] text-muted-foreground">
+        <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-2xs text-muted-foreground">
           {suffix}
         </span>
       )}

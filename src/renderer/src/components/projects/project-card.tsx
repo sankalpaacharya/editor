@@ -43,7 +43,7 @@ export function ProjectCard({ project, onOpen, onRename, onDelete }: ProjectCard
         </div>
         <div className="flex h-8 items-baseline gap-2 pr-8 pl-2.5">
           <span className="min-w-0 truncate text-xs font-medium leading-8">{project.name}</span>
-          <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">
+          <span className="ml-auto shrink-0 text-2xs text-muted-foreground">
             {formatAgo(project.updatedAt)}
           </span>
         </div>

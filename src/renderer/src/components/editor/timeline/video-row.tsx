@@ -126,7 +126,7 @@ export function VideoRow({
               onSeek(event.clientX)
             }}
             className={cn(
-              'absolute inset-y-0 flex items-center justify-center rounded-md text-[10px] transition-colors',
+              'absolute inset-y-0 flex items-center justify-center rounded-md text-2xs transition-colors',
               selected
                 ? 'bg-selection/15 text-selection ring-1 ring-selection/60 ring-inset'
                 : 'text-transparent hover:bg-white/[0.04] hover:text-muted-foreground'

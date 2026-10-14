@@ -16,7 +16,7 @@ export function Ruler({ pixelsPerSecond, width, onScrub }: RulerProps) {
   return (
     <div
       onPointerDown={onScrub}
-      className="relative cursor-ew-resize overflow-hidden text-[10px] text-muted-foreground tabular-nums"
+      className="relative cursor-ew-resize overflow-hidden text-2xs text-muted-foreground tabular-nums"
       style={{
         height: RULER_HEIGHT,
         width,
