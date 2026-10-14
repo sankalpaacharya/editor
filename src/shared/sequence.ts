@@ -41,7 +41,9 @@ export const clipSchema = z.object({
   in: seconds,
   out: seconds,
   speed: z.number().finite().min(MIN_SPEED).max(MAX_SPEED),
-  volume: unit.default(1)
+  volume: unit.default(1),
+  // Empty timeline time before the clip. Trims open and close gaps instead of shifting later clips.
+  gap: seconds.default(0)
 })
 export type Clip = z.infer<typeof clipSchema>
 
@@ -98,7 +100,17 @@ export function timelineLength(clip: Clip): number {
 }
 
 export function timelineDuration(clips: readonly Clip[]): number {
-  return clips.reduce((sum, clip) => sum + timelineLength(clip), 0)
+  return clips.reduce((sum, clip) => sum + clip.gap + timelineLength(clip), 0)
+}
+
+export function clipStarts(clips: readonly Clip[]): number[] {
+  const starts: number[] = []
+  let end = 0
+  for (const clip of clips) {
+    starts.push(end + clip.gap)
+    end += clip.gap + timelineLength(clip)
+  }
+  return starts
 }
 
 export interface TimelinePosition {
@@ -106,20 +118,32 @@ export interface TimelinePosition {
   clip: Clip
   clipStart: number
   sourceTime: number
+  inGap: boolean
 }
 
 export function locate(clips: readonly Clip[], time: number): TimelinePosition | null {
-  let clipStart = 0
+  const starts = clipStarts(clips)
   for (let index = 0; index < clips.length; index++) {
     const clip = clips[index]
+    const clipStart = starts[index]
     const length = timelineLength(clip)
     if (time < clipStart + length || index === clips.length - 1) {
       const offset = Math.min(Math.max(time - clipStart, 0), length)
-      return { index, clip, clipStart, sourceTime: clip.in + offset * clip.speed }
+      return {
+        index,
+        clip,
+        clipStart,
+        sourceTime: clip.in + offset * clip.speed,
+        inGap: time < clipStart
+      }
     }
-    clipStart += length
   }
   return null
+}
+
+function withGap(clips: readonly Clip[], index: number, gap: number): Clip[] {
+  const clip = clips[index]
+  return clip ? clips.toSpliced(index, 1, { ...clip, gap: Math.max(gap, 0) }) : [...clips]
 }
 
 export type SequenceAction =
@@ -152,7 +176,8 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
         in: 0,
         out: media.duration,
         speed: 1,
-        volume: 1
+        volume: 1,
+        gap: 0
       }
       const index = clamp(action.index ?? sequence.clips.length, 0, sequence.clips.length)
       const format =
@@ -165,6 +190,7 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
       const position = locate(sequence.clips, action.time)
       if (!position) return sequence
       const { index, clip, sourceTime } = position
+      if (position.inGap) return sequence
       if (sourceTime - clip.in < MIN_CLIP_LENGTH || clip.out - sourceTime < MIN_CLIP_LENGTH) {
         return sequence
       }
@@ -172,16 +198,24 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
         index,
         1,
         { ...clip, out: sourceTime },
-        { ...clip, id: action.newClipId, in: sourceTime }
+        { ...clip, id: action.newClipId, in: sourceTime, gap: 0 }
       )
       return { ...sequence, clips }
     }
     case 'trim': {
-      const clips = sequence.clips.map((clip) => {
-        if (clip.id !== action.clipId) return clip
-        const out = clamp(action.out, MIN_CLIP_LENGTH, action.mediaDuration)
-        return { ...clip, in: clamp(action.in, 0, out - MIN_CLIP_LENGTH), out }
-      })
+      // Edges move in place: the gaps on either side absorb the change, and later clips are
+      // pushed only once the gap after the clip is used up.
+      const index = sequence.clips.findIndex((clip) => clip.id === action.clipId)
+      if (index === -1) return sequence
+      const clip = sequence.clips[index]
+      const out = clamp(action.out, MIN_CLIP_LENGTH, action.mediaDuration)
+      const trimmed = { ...clip, in: clamp(action.in, 0, out - MIN_CLIP_LENGTH), out }
+      const start = clipStarts(sequence.clips)[index]
+      const previousEnd = start - clip.gap
+      const nextStart = start + timelineLength(clip) + (sequence.clips[index + 1]?.gap ?? 0)
+      trimmed.gap = Math.max(clip.gap + (trimmed.in - clip.in) / clip.speed, 0)
+      const end = previousEnd + trimmed.gap + timelineLength(trimmed)
+      const clips = withGap(sequence.clips.toSpliced(index, 1, trimmed), index + 1, nextStart - end)
       return { ...sequence, clips }
     }
     case 'setSpeed': {
@@ -203,14 +237,16 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
     case 'duplicateClip': {
       const index = sequence.clips.findIndex((clip) => clip.id === action.clipId)
       if (index === -1) return sequence
-      const copy = { ...sequence.clips[index], id: action.newClipId }
+      const copy = { ...sequence.clips[index], id: action.newClipId, gap: 0 }
       return { ...sequence, clips: sequence.clips.toSpliced(index + 1, 0, copy) }
     }
     case 'moveClip': {
       const from = sequence.clips.findIndex((clip) => clip.id === action.clipId)
       if (from === -1) return sequence
       const to = clamp(action.toIndex, 0, sequence.clips.length - 1)
-      const clips = sequence.clips.toSpliced(from, 1).toSpliced(to, 0, sequence.clips[from])
+      const clips = sequence.clips
+        .toSpliced(from, 1)
+        .toSpliced(to, 0, { ...sequence.clips[from], gap: 0 })
       return { ...sequence, clips }
     }
     case 'addOverlay':

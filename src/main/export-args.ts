@@ -85,6 +85,14 @@ function audioChain(clip: Clip, input: number, media: VideoMedia): string {
   )
 }
 
+function gapChains(gap: number, { width, height, fps }: Format): [string, string] {
+  const duration = gap.toFixed(3)
+  return [
+    `color=c=black:s=${width}x${height}:r=${fps}:d=${duration},setsar=1`,
+    `anullsrc=r=48000:cl=stereo,atrim=duration=${duration}`
+  ]
+}
+
 function videoMedia(inputs: ExportInputs, mediaId: MediaId): VideoMedia {
   const { media } = inputs.resolveMedia(mediaId)
   if (media.kind !== 'video') throw new Error(`Clip media ${mediaId} is not a video`)
@@ -101,13 +109,16 @@ export function buildExportArgs(sequence: Sequence, inputs: ExportInputs): strin
   ]
   const graph: string[] = []
 
-  const segments = clips.map((clip, i) => {
+  const segments = clips.flatMap((clip, i) => {
     const input = videos.indexOf(clip.mediaId)
     graph.push(`${videoChain(clip, input, format)}[v${i}]`)
     graph.push(`${audioChain(clip, input, videoMedia(inputs, clip.mediaId))}[a${i}]`)
-    return `[v${i}][a${i}]`
+    if (clip.gap === 0) return [`[v${i}][a${i}]`]
+    const [video, audio] = gapChains(clip.gap, format)
+    graph.push(`${video}[gv${i}]`, `${audio}[ga${i}]`)
+    return [`[gv${i}][ga${i}]`, `[v${i}][a${i}]`]
   })
-  graph.push(`${segments.join('')}concat=n=${clips.length}:v=1:a=1[base][aout]`)
+  graph.push(`${segments.join('')}concat=n=${segments.length}:v=1:a=1[base][aout]`)
 
   let current = 'base'
   overlays.forEach((overlay, i) => {

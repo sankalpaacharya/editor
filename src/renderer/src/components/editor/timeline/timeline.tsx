@@ -14,7 +14,6 @@ import { Panel } from '@/components/editor/panel'
 import { AudioRow } from '@/components/editor/timeline/audio-row'
 import {
   AUDIO_ROW_HEIGHT,
-  clipStarts,
   GUTTER,
   insertionIndex,
   overlayLayout,
@@ -30,7 +29,12 @@ import { Toolbar } from '@/components/editor/timeline/toolbar'
 import { VideoRow } from '@/components/editor/timeline/video-row'
 import { useElementSize } from '@/hooks/use-element-size'
 import type { usePlayback } from '@/hooks/use-playback'
-import type { MediaId, MediaItem, Sequence } from '../../../../../shared/sequence'
+import {
+  clipStarts,
+  type MediaId,
+  type MediaItem,
+  type Sequence
+} from '../../../../../shared/sequence'
 import { draggedMediaId, isImageDrag, isMediaDrag } from '@/lib/media-drag'
 import { trackPointer } from '@/lib/pointer'
 import type { Selection } from '@/lib/selection'

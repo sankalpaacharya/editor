@@ -97,9 +97,9 @@ describe('buildExportArgs', () => {
     const sequence = {
       format: { width: 640, height: 360, fps: 30 },
       clips: [
-        { id: 'a', mediaId: LANDSCAPE, in: 2, out: 6, speed: 2, volume: 0.5 },
-        { id: 'b', mediaId: SILENT, in: 0, out: 3, speed: 1, volume: 1 },
-        { id: 'c', mediaId: LANDSCAPE, in: 0, out: 1.5, speed: 1, volume: 1 }
+        { id: 'a', mediaId: LANDSCAPE, in: 2, out: 6, speed: 2, volume: 0.5, gap: 0 },
+        { id: 'b', mediaId: SILENT, in: 0, out: 3, speed: 1, volume: 1, gap: 0 },
+        { id: 'c', mediaId: LANDSCAPE, in: 0, out: 1.5, speed: 1, volume: 1, gap: 1 }
       ],
       overlays: [
         {
@@ -135,7 +135,7 @@ describe('buildExportArgs', () => {
     )
 
     const { format, streams } = probe(output)
-    expect(Number(format.duration)).toBeCloseTo(6.5, 1)
+    expect(Number(format.duration)).toBeCloseTo(7.5, 1)
     expect(streams.filter((stream) => stream.codec_type === 'video')).toEqual([
       { codec_type: 'video', width: 640, height: 360 }
     ])

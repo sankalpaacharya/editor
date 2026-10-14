@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import {
+  clipStarts,
   timelineLength,
   type Clip,
   type MediaItem,
@@ -24,16 +25,6 @@ export interface ClipDrag {
 export function sourceSpan(clip: Clip, media: MediaItem | undefined, pps: number): CSSProperties {
   const mediaDuration = media?.kind === 'video' ? media.duration : clip.out
   return { left: (-clip.in * pps) / clip.speed, width: (mediaDuration * pps) / clip.speed }
-}
-
-export function clipStarts(clips: readonly Clip[]): number[] {
-  const starts: number[] = []
-  let time = 0
-  for (const clip of clips) {
-    starts.push(time)
-    time += timelineLength(clip)
-  }
-  return starts
 }
 
 export function insertionIndex(clips: readonly Clip[], time: number, skip = -1): number {
