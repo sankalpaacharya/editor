@@ -20,14 +20,27 @@ async function checkForUpdates() {
   }
 }
 
-export function Rail({ groups }: { groups: RailItem[][] }) {
+export function Rail({ groups, onHome }: { groups: RailItem[][]; onHome?: () => void }) {
+  const mark = <img src={logo} alt="" className="size-8 rounded-lg" draggable={false} />
   return (
-    <nav className="flex w-[68px] shrink-0 flex-col items-center gap-1 py-2">
-      <img src={logo} alt="Editor" className="mb-2 size-9 rounded-[9px]" draggable={false} />
+    <nav className="flex w-16 shrink-0 flex-col items-center gap-1 py-2">
+      {onHome ? (
+        <button
+          type="button"
+          onClick={onHome}
+          aria-label="Back to projects"
+          title="Back to projects"
+          className="mb-3 rounded-lg outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {mark}
+        </button>
+      ) : (
+        <div className="mb-3">{mark}</div>
+      )}
       {groups.map((items, index) => (
         <div
           key={index}
-          className={cn('flex flex-col items-center gap-1', index > 0 && 'mt-1 border-t pt-2')}
+          className={cn('flex flex-col items-center gap-1', index > 0 && 'mt-2 border-t pt-3')}
         >
           {items.map((item) => (
             <RailButton key={item.label} {...item} />
@@ -53,13 +66,18 @@ function RailButton({ label, icon, active, onSelect }: RailItem) {
       onClick={onSelect}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex h-12 w-14 flex-col items-center justify-center gap-1 rounded-lg text-[10px] font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        active
-          ? 'bg-secondary text-foreground'
-          : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
+        'group flex w-14 flex-col items-center gap-1 py-1 text-[10px] font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg',
+        active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
       )}
     >
-      <HugeiconsIcon icon={icon} strokeWidth={1.6} className="size-[18px]" />
+      <span
+        className={cn(
+          'flex size-9 items-center justify-center rounded-lg transition-colors',
+          active ? 'bg-secondary' : 'group-hover:bg-secondary/60'
+        )}
+      >
+        <HugeiconsIcon icon={icon} strokeWidth={1.6} className="size-[18px]" />
+      </span>
       {label}
     </button>
   )

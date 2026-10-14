@@ -143,7 +143,7 @@ export function Preview({
                   className={cn(
                     'absolute cursor-move touch-none select-none',
                     isSelected(selection, 'overlay', overlay.id) &&
-                      'outline-1 outline-offset-2 outline-brand'
+                      'outline-1 outline-offset-2 outline-selection'
                   )}
                   style={{
                     left: `${overlay.x * 100}%`,

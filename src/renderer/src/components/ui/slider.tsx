@@ -41,7 +41,7 @@ function Slider({
       >
         <SliderPrimitive.Range
           data-slot="slider-range"
-          className="absolute bg-brand select-none data-horizontal:h-full data-vertical:w-full"
+          className="absolute bg-foreground/80 select-none data-horizontal:h-full data-vertical:w-full"
         />
       </SliderPrimitive.Track>
       {Array.from({ length: _values.length }, (_, index) => (

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useReducer, useState } from 'react'
-import { Folder01Icon, Image01Icon, TextIcon } from '@hugeicons/core-free-icons'
+import { Image01Icon, TextIcon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { Rail } from '@/components/rail'
 import { EditorHeader } from '@/components/editor/header'
@@ -31,7 +31,6 @@ import { nextSelection, onlySelected, type Select, type Selection } from '@/lib/
 import { cn } from '@/lib/utils'
 
 export type Edit = (action: SequenceAction, coalesce?: string) => void
-
 
 export function Editor({ project, onClose }: { project: OpenProject; onClose: () => void }) {
   const [history, dispatch] = useReducer(historyReducer, project.sequence, initialHistory)
@@ -203,8 +202,8 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
       )}
     >
       <Rail
+        onHome={close}
         groups={[
-          [{ label: 'Projects', icon: Folder01Icon, active: false, onSelect: close }],
           [
             {
               label: 'Media',

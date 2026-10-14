@@ -25,7 +25,7 @@ export function ClipTabs({ tab, onTab }: { tab: ClipTab; onTab: (tab: ClipTab) =
           aria-selected={id === tab}
           onClick={() => onTab(id)}
           className={cn(
-            'h-7 rounded-md px-2.5 text-sm transition-colors',
+            'h-7 rounded-md px-2.5 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
             id === tab
               ? 'bg-secondary font-medium text-foreground'
               : 'font-normal text-muted-foreground hover:text-foreground'
@@ -66,7 +66,7 @@ export function ClipInspector({ clip, tab, edit }: ClipInspectorProps) {
               className={cn(
                 'h-9 rounded-lg text-xs tabular-nums transition-colors',
                 speed === clip.speed
-                  ? 'bg-secondary font-medium text-foreground ring-1 ring-brand/50'
+                  ? 'bg-secondary font-medium text-foreground ring-1 ring-foreground/30'
                   : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
             >

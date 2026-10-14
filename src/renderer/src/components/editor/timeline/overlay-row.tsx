@@ -106,7 +106,7 @@ export function OverlayRow({
                 className={cn(
                   'absolute inset-y-0 w-1.5 cursor-ew-resize',
                   edge === 'start' ? 'left-0' : 'right-0',
-                  selected && 'bg-brand/80'
+                  selected && 'bg-selection'
                 )}
               />
             ))}

@@ -50,6 +50,8 @@ export function useEditorShortcuts(commands: Commands) {
     else if (key === 'end') commands.seek(Number.POSITIVE_INFINITY)
     else return
     event.preventDefault()
+    // A button clicked earlier keeps focus, and a key press would then draw its focus ring.
+    if (document.activeElement instanceof HTMLButtonElement) document.activeElement.blur()
   })
 
   useEffect(() => {
