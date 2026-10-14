@@ -16,12 +16,12 @@ describe('editProject', () => {
     let project = createProject(source, 'a')
     project = editProject(project, { type: 'split', time: 4, newClipId: 'b' })
     expect(project.clips).toEqual([
-      { id: 'a', in: 0, out: 4 },
-      { id: 'b', in: 4, out: 10 }
+      { id: 'a', in: 0, out: 4, speed: 1 },
+      { id: 'b', in: 4, out: 10, speed: 1 }
     ])
 
     project = editProject(project, { type: 'removeClip', clipId: 'a' })
-    expect(project.clips).toEqual([{ id: 'b', in: 4, out: 10 }])
+    expect(project.clips).toEqual([{ id: 'b', in: 4, out: 10, speed: 1 }])
     expect(timelineDuration(project.clips)).toBe(6)
   })
 
@@ -50,13 +50,14 @@ describe('editProject', () => {
 })
 
 describe('locate', () => {
-  it('maps timeline time to source time across reordered clips', () => {
+  it('maps timeline time to source time across reordered and sped-up clips', () => {
     const clips = [
-      { id: 'b', in: 6, out: 10 },
-      { id: 'a', in: 0, out: 2 }
+      { id: 'b', in: 6, out: 10, speed: 2 },
+      { id: 'a', in: 0, out: 2, speed: 1 }
     ]
-    expect(locate(clips, 1)).toMatchObject({ index: 0, sourceTime: 7 })
-    expect(locate(clips, 5)).toMatchObject({ index: 1, clipStart: 4, sourceTime: 1 })
+    expect(timelineDuration(clips)).toBe(4)
+    expect(locate(clips, 1)).toMatchObject({ index: 0, sourceTime: 8 })
+    expect(locate(clips, 3)).toMatchObject({ index: 1, clipStart: 2, sourceTime: 1 })
     expect(locate(clips, 99)).toMatchObject({ index: 1, sourceTime: 2 })
   })
 })

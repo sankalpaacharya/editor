@@ -12,6 +12,22 @@ const escapeOptionValue = (value: string): string => value.replace(/[\\':]/g, '\
 const escapeGraphValue = (value: string): string => value.replace(/[\\'[\],;]/g, '\\$&')
 const filterValue = (value: string): string => escapeGraphValue(escapeOptionValue(value))
 
+// atempo only accepts factors between 0.5 and 2, so larger changes are chained.
+function atempoChain(speed: number): string {
+  const factors: number[] = []
+  let rest = speed
+  while (rest > 2) {
+    factors.push(2)
+    rest /= 2
+  }
+  while (rest < 0.5) {
+    factors.push(0.5)
+    rest /= 0.5
+  }
+  if (rest !== 1) factors.push(rest)
+  return factors.map((factor) => `,atempo=${factor.toFixed(4)}`).join('')
+}
+
 const enableBetween = (start: number, end: number): string =>
   `enable='between(t,${start.toFixed(3)},${end.toFixed(3)})'`
 
@@ -44,9 +60,10 @@ export function buildExportArgs(project: Project, inputs: ExportInputs): string[
 
   const concatInputs = clips.map((clip, i) => {
     const range = `start=${clip.in.toFixed(3)}:end=${clip.out.toFixed(3)}`
-    graph.push(`[0:v]trim=${range},setpts=PTS-STARTPTS[v${i}]`)
+    const retime = clip.speed === 1 ? '' : `,fps=${source.fps}`
+    graph.push(`[0:v]trim=${range},setpts=(PTS-STARTPTS)/${clip.speed}${retime}[v${i}]`)
     if (!source.hasAudio) return `[v${i}]`
-    graph.push(`[0:a]atrim=${range},asetpts=PTS-STARTPTS[a${i}]`)
+    graph.push(`[0:a]atrim=${range},asetpts=PTS-STARTPTS${atempoChain(clip.speed)}[a${i}]`)
     return `[v${i}][a${i}]`
   })
   const audio = source.hasAudio ? 1 : 0

@@ -11,7 +11,7 @@ import { buildExportArgs, parseProgressSeconds } from './export-args'
 const ffmpeg = ffmpegPath as unknown as string
 
 describe('buildExportArgs', () => {
-  it('renders trimmed, reordered clips with text and image overlays', () => {
+  it('renders trimmed, reordered, sped-up clips with text and image overlays', () => {
     const dir = mkdtempSync(join(tmpdir(), 'editor-export-'))
     const video = join(dir, 'in.mp4')
     const image = join(dir, 'logo.png')
@@ -52,8 +52,8 @@ describe('buildExportArgs', () => {
         hasAudio: true
       },
       clips: [
-        { id: 'b', in: 4, out: 6 },
-        { id: 'a', in: 0, out: 1.5 }
+        { id: 'b', in: 2, out: 6, speed: 2 },
+        { id: 'a', in: 0, out: 1.5, speed: 1 }
       ],
       overlays: [
         {

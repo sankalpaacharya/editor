@@ -25,12 +25,16 @@ export const imageAssetSchema = z.object({
 })
 export type ImageAsset = z.infer<typeof imageAssetSchema>
 
+export const MIN_SPEED = 0.25
+export const MAX_SPEED = 4
+
 export const clipSchema = z.object({
   id: z.string(),
   in: seconds,
-  out: seconds
+  out: seconds,
+  speed: z.number().finite().min(MIN_SPEED).max(MAX_SPEED).default(1)
 })
-/** A range of the source video, in source seconds. */
+/** A range of the source video in source seconds, played back at `speed`. */
 export type Clip = z.infer<typeof clipSchema>
 
 const overlayBase = {
@@ -78,11 +82,12 @@ export type Project = z.infer<typeof projectSchema>
 export const MIN_CLIP_LENGTH = 0.1
 
 export function createProject(source: MediaInfo, clipId: string): Project {
-  return { source, clips: [{ id: clipId, in: 0, out: source.duration }], overlays: [] }
+  return { source, clips: [{ id: clipId, in: 0, out: source.duration, speed: 1 }], overlays: [] }
 }
 
+/** How long the clip lasts on the timeline. */
 export function clipLength(clip: Clip): number {
-  return clip.out - clip.in
+  return (clip.out - clip.in) / clip.speed
 }
 
 export function timelineDuration(clips: readonly Clip[]): number {
@@ -105,7 +110,7 @@ export function locate(clips: readonly Clip[], time: number): TimelinePosition {
     const length = clipLength(clip)
     if (time < clipStart + length || index === clips.length - 1) {
       const offset = Math.min(Math.max(time - clipStart, 0), length)
-      return { index, clip, clipStart, sourceTime: clip.in + offset }
+      return { index, clip, clipStart, sourceTime: clip.in + offset * clip.speed }
     }
     clipStart += length
   }
@@ -115,6 +120,7 @@ export function locate(clips: readonly Clip[], time: number): TimelinePosition {
 export type ProjectAction =
   | { type: 'split'; time: number; newClipId: string }
   | { type: 'trim'; clipId: string; in: number; out: number }
+  | { type: 'setSpeed'; clipId: string; speed: number }
   | { type: 'removeClip'; clipId: string }
   | { type: 'moveClip'; clipId: string; toIndex: number }
   | { type: 'addOverlay'; overlay: Overlay }
@@ -132,7 +138,7 @@ export function editProject(project: Project, action: ProjectAction): Project {
         index,
         1,
         { ...clip, out: sourceTime },
-        { id: action.newClipId, in: sourceTime, out: clip.out }
+        { ...clip, id: action.newClipId, in: sourceTime }
       )
       return { ...project, clips }
     }
@@ -143,6 +149,13 @@ export function editProject(project: Project, action: ProjectAction): Project {
         const clipIn = Math.min(Math.max(action.in, 0), out - MIN_CLIP_LENGTH)
         return { ...clip, in: clipIn, out }
       })
+      return { ...project, clips }
+    }
+    case 'setSpeed': {
+      const speed = Math.min(Math.max(action.speed, MIN_SPEED), MAX_SPEED)
+      const clips = project.clips.map((clip) =>
+        clip.id === action.clipId ? { ...clip, speed } : clip
+      )
       return { ...project, clips }
     }
     case 'removeClip': {
