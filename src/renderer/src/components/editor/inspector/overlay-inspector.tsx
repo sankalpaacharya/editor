@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Colorful from '@uiw/react-color-colorful'
 import { Textarea } from '@/components/ui/textarea'
-import { Field, NumberField, PercentSlider, Section } from '@/components/editor/inspector/fields'
+import { Field, NumberField, PercentSlider, Section } from '@/components/ui/field'
 import { useCoalesceKey } from '@/hooks/use-coalesce-key'
 import type { ImageMedia, ImageOverlay, Overlay, TextOverlay } from '../../../../../shared/sequence'
 import { clamp } from '@/lib/format'

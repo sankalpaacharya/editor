@@ -20,9 +20,9 @@ import {
   VolumeMute02Icon
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
-import { IconButton } from '@/components/icon-button'
+import { IconButton } from '@/components/ui/icon-button'
 import type { Edit } from '@/components/editor/editor'
-import { Panel } from '@/components/editor/panel'
+import { Panel } from '@/components/ui/panel'
 import { ProgramMeter } from '@/components/editor/timeline/program-meter'
 import type { FrameSource, MeterFrame } from '@/lib/audio/types'
 import { AudioRow } from '@/components/editor/timeline/audio-row'

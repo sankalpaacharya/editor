@@ -1,6 +1,6 @@
 import { Add01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Panel } from '@/components/editor/panel'
+import { Panel } from '@/components/ui/panel'
 import { TEXT_PRESETS, type TextPreset } from '@/lib/overlays'
 
 interface TextPanelProps {

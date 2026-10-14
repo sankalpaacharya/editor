@@ -1,7 +1,7 @@
 import { FullScreenIcon, PauseIcon, PlayIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { IconButton } from '@/components/icon-button'
+import { IconButton } from '@/components/ui/icon-button'
 import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
 import type { Format } from '../../../../shared/sequence'
 import { formatClock } from '@/lib/format'

@@ -3,7 +3,7 @@ import { Upload04Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@/components/ui/button'
 import { MediaCard } from '@/components/editor/media-card'
-import { Panel } from '@/components/editor/panel'
+import { Panel } from '@/components/ui/panel'
 import type { MediaId, MediaItem, Sequence } from '../../../../shared/sequence'
 
 interface MediaPanelProps {

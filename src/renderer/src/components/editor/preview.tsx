@@ -9,7 +9,7 @@ import {
 import { mediaUrl } from '../../../../shared/api'
 import type { ImageMedia, MediaId, MediaItem, Overlay, Sequence } from '../../../../shared/sequence'
 import type { Edit } from '@/components/editor/editor'
-import { Panel } from '@/components/editor/panel'
+import { Panel } from '@/components/ui/panel'
 import { useElementSize } from '@/hooks/use-element-size'
 import { clamp } from '@/lib/format'
 import { draggedMediaId, isMediaDrag } from '@/lib/media-drag'

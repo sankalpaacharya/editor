@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { Download04Icon, Upload04Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@/components/ui/button'
-import { IconButton } from '@/components/icon-button'
+import { IconButton } from '@/components/ui/icon-button'
 import { checkForUpdates } from '@/lib/updates'
 import logo from '../../../../../assets/logo.svg'
 

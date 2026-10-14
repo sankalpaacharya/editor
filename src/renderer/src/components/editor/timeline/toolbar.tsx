@@ -11,7 +11,7 @@ import {
   UndoIcon
 } from '@hugeicons/core-free-icons'
 import { Slider } from '@/components/ui/slider'
-import { IconButton } from '@/components/icon-button'
+import { IconButton } from '@/components/ui/icon-button'
 import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
 import { cn } from '@/lib/utils'
 

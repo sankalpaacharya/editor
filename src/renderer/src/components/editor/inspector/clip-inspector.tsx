@@ -1,8 +1,8 @@
 import { useRef } from 'react'
 import { VolumeHighIcon, VolumeMute02Icon } from '@hugeicons/core-free-icons'
-import { IconButton } from '@/components/icon-button'
+import { IconButton } from '@/components/ui/icon-button'
 import type { Edit } from '@/components/editor/editor'
-import { PercentSlider, Section } from '@/components/editor/inspector/fields'
+import { PercentSlider, Section } from '@/components/ui/field'
 import type { Clip } from '../../../../../shared/sequence'
 import { cn } from '@/lib/utils'
 
