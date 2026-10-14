@@ -34,6 +34,14 @@ describe('editSequence', () => {
     expect(timelineDuration(sequence.clips)).toBe(6)
   })
 
+  it('reshapes the frame to a new aspect ratio around its short side', () => {
+    let sequence = editSequence(emptySequence(), { type: 'addClip', clipId: 'a', media: A })
+    sequence = editSequence(sequence, { type: 'setAspect', width: 9, height: 16 })
+    expect(sequence.format).toMatchObject({ width: 720, height: 1280 })
+    sequence = editSequence(sequence, { type: 'setAspect', width: 4, height: 5 })
+    expect(sequence.format).toMatchObject({ width: 720, height: 900 })
+  })
+
   it('clamps trims to the media and to a minimum clip length', () => {
     let sequence = editSequence(emptySequence(), { type: 'addClip', clipId: 'a', media: A })
     sequence = editSequence(sequence, {

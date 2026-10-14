@@ -183,6 +183,7 @@ export type SequenceAction =
   | { type: 'moveClip'; clipId: string; start: number }
   | { type: 'closeGap'; clipId: string }
   | { type: 'setTrack'; track: TrackId; change: Partial<Track> }
+  | { type: 'setAspect'; width: number; height: number }
   | { type: 'addOverlay'; overlay: Overlay }
   | { type: 'updateOverlay'; overlay: Overlay }
   | { type: 'removeOverlay'; overlayId: string }
@@ -294,6 +295,17 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
     case 'closeGap': {
       const index = sequence.clips.findIndex((clip) => clip.id === action.clipId)
       return index === -1 ? sequence : { ...sequence, clips: withGap(sequence.clips, index, 0) }
+    }
+    case 'setAspect': {
+      // Keeps the frame's short side and reshapes the long side to the requested ratio.
+      const short = Math.min(sequence.format.width, sequence.format.height)
+      const scale = short / Math.min(action.width, action.height)
+      const format = {
+        ...sequence.format,
+        width: even(action.width * scale),
+        height: even(action.height * scale)
+      }
+      return { ...sequence, format }
     }
     case 'setTrack': {
       const track = { ...sequence.tracks[action.track], ...action.change }

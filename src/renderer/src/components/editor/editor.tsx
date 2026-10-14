@@ -257,6 +257,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
             duration={duration}
             format={sequence.format}
             onToggle={playback.toggle}
+            onAspect={(width, height) => edit({ type: 'setAspect', width, height })}
             volume={volume}
             onVolume={setVolume}
           />

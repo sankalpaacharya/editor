@@ -13,15 +13,19 @@ import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
 import type { Format } from '../../../../shared/sequence'
 import { formatClock } from '@/lib/format'
 import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 const RATIOS = [
   [16, 9],
   [9, 16],
   [1, 1],
-  [4, 3],
-  [3, 4],
   [4, 5],
-  [21, 9]
+  [4, 3]
 ]
 
 function ratioLabel({ width, height }: Format): string {
@@ -41,6 +45,7 @@ interface PlayerControlsProps {
   duration: number
   format: Format
   onToggle: () => void
+  onAspect: (width: number, height: number) => void
   volume: PreviewVolume
   onVolume: (volume: PreviewVolume) => void
 }
@@ -51,6 +56,7 @@ export function PlayerControls({
   duration,
   format,
   onToggle,
+  onAspect,
   volume,
   onVolume
 }: PlayerControlsProps) {
@@ -98,7 +104,31 @@ export function PlayerControls({
           onValueChange={([percent]) => onVolume({ level: percent / 100, muted: false })}
           className="mr-2 w-20"
         />
-        <Badge variant="outline">{ratioLabel(format)}</Badge>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label="Aspect ratio"
+              className="rounded-sm outline-none hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/40"
+            >
+              <Badge variant="outline">{ratioLabel(format)}</Badge>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-28">
+            {RATIOS.map(([width, height]) => (
+              <DropdownMenuItem key={`${width}:${height}`} onSelect={() => onAspect(width, height)}>
+                <span
+                  className="mr-1 inline-block rounded-xs border border-current"
+                  style={{
+                    width: (width / Math.max(width, height)) * 14,
+                    height: (height / Math.max(width, height)) * 14
+                  }}
+                />
+                {width}:{height}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <IconButton
           icon={FullScreenIcon}
           label="Full screen"
