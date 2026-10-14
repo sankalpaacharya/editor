@@ -107,6 +107,12 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
     setSelection({ kind: 'overlay', id: overlay.id })
   }
 
+  const duplicate = () => {
+    if (selection?.kind === 'clip') {
+      edit({ type: 'duplicateClip', clipId: selection.id, newClipId: crypto.randomUUID() })
+    }
+  }
+
   const split = () => edit({ type: 'split', time: playhead, newClipId: crypto.randomUUID() })
 
   function deleteSelection() {
@@ -194,6 +200,8 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
             onSelect={setSelection}
             edit={edit}
             onDropImage={(image, position) => addImage(image, playhead, position)}
+            master={master}
+            onMasterChange={setMaster}
           >
             <PlayerControls
               playing={playback.playing}
@@ -201,8 +209,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
               duration={duration}
               onToggle={playback.toggle}
               onSeek={playback.seek}
-              master={master}
-              onMasterChange={setMaster}
+              fps={sequence.format.fps}
             />
           </Preview>
           <Inspector
@@ -228,6 +235,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
           onUndo={undo}
           onRedo={redo}
           onSplit={split}
+          onDuplicate={duplicate}
           onDelete={deleteSelection}
           onDropMedia={addMedia}
         />

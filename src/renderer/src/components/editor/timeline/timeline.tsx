@@ -52,6 +52,7 @@ interface TimelineProps {
   onUndo: () => void
   onRedo: () => void
   onSplit: () => void
+  onDuplicate: () => void
   onDelete: () => void
   onDropMedia: (item: MediaItem, at: { index?: number; time?: number }) => void
 }
@@ -151,14 +152,7 @@ export function Timeline({
         : null
 
   return (
-    <Panel className="h-[264px] shrink-0">
-      <Toolbar
-        {...toolbar}
-        duration={duration}
-        canDelete={selection !== null}
-        zoom={zoom}
-        onZoom={zoomTo}
-      />
+    <Panel className="h-[300px] shrink-0">
       <div
         ref={scrollerRef}
         onPointerDown={() => onSelect(null)}
@@ -233,6 +227,14 @@ export function Timeline({
           )}
         </div>
       </div>
+      <Toolbar
+        {...toolbar}
+        duration={duration}
+        canDelete={selection !== null}
+        canDuplicate={selection?.kind === 'clip'}
+        zoom={zoom}
+        onZoom={zoomTo}
+      />
     </Panel>
   )
 }
@@ -248,11 +250,11 @@ function Row({ icon, label, className, children }: RowProps) {
   return (
     <div className={cn('flex', className)} style={{ marginTop: icon ? ROW_GAP : 0 }}>
       <div
-        className="sticky left-0 z-10 flex shrink-0 items-center justify-center bg-card text-muted-foreground"
+        className="sticky left-0 z-10 flex shrink-0 items-center gap-2 border-r bg-card px-3 text-xs text-muted-foreground"
         style={{ width: GUTTER }}
-        title={label}
       >
-        {icon && <HugeiconsIcon icon={icon} strokeWidth={1.6} className="size-3.5" />}
+        {icon && <HugeiconsIcon icon={icon} strokeWidth={1.6} className="size-4 shrink-0" />}
+        {label}
       </div>
       <div className="relative min-w-0 flex-1">{children}</div>
     </div>
@@ -270,12 +272,12 @@ function Playhead({
 }) {
   return (
     <div
-      className="pointer-events-none absolute top-0 z-30 w-px bg-brand"
+      className="pointer-events-none absolute top-0 z-30 w-px bg-white"
       style={{ left: x, height }}
     >
       <div
         onPointerDown={onScrub}
-        className="pointer-events-auto absolute -top-px left-1/2 h-3 w-2.5 -translate-x-1/2 cursor-ew-resize rounded-b-[3px] rounded-t-[1px] bg-brand"
+        className="pointer-events-auto absolute top-2 left-1/2 size-2.5 -translate-x-1/2 cursor-ew-resize rounded-full bg-white shadow-[0_0_0_3px_var(--card)]"
       />
     </div>
   )

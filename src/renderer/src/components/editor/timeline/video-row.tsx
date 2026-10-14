@@ -1,5 +1,5 @@
 import { useState, type PointerEvent } from 'react'
-import { VolumeMute02Icon } from '@hugeicons/core-free-icons'
+import { ArrowLeft01Icon, ArrowRight01Icon, VolumeMute02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { Edit } from '@/components/editor/editor'
 import {
@@ -110,13 +110,13 @@ export function VideoRow({
             <div
               className={cn(
                 'pointer-events-none absolute inset-0 rounded-md ring-inset',
-                selected ? 'ring-2 ring-brand' : 'ring-1 ring-white/15'
+                selected ? 'ring-[3px] ring-selection' : 'ring-1 ring-white/15'
               )}
             />
             <div
               className={cn(
                 'pointer-events-none absolute top-1.5 flex max-w-[calc(100%-16px)] items-center gap-1 text-[10px] leading-4 text-white/90',
-                selected ? 'left-3.5' : 'left-1.5'
+                selected ? 'left-5' : 'left-1.5'
               )}
             >
               <span className="truncate rounded-[4px] bg-black/55 px-1.5 backdrop-blur-sm">
@@ -139,11 +139,15 @@ export function VideoRow({
                   key={edge}
                   onPointerDown={(event) => pressEdge(event, clip, edge)}
                   className={cn(
-                    'absolute inset-y-0 flex w-3 cursor-ew-resize items-center justify-center',
-                    edge === 'in' ? 'left-0.5' : 'right-0.5'
+                    'absolute inset-y-0 flex w-3.5 cursor-ew-resize items-center justify-center bg-selection',
+                    edge === 'in' ? 'left-0' : 'right-0'
                   )}
                 >
-                  <div className="h-5 w-1 rounded-full bg-white shadow-[0_0_0_1px_rgb(0_0_0/0.35)]" />
+                  <HugeiconsIcon
+                    icon={edge === 'in' ? ArrowLeft01Icon : ArrowRight01Icon}
+                    strokeWidth={3}
+                    className="size-3.5 text-black"
+                  />
                 </div>
               ))}
           </div>

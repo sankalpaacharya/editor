@@ -6,10 +6,10 @@ import {
   type Overlay
 } from '../../../../../shared/sequence'
 
-export const GUTTER = 32
+export const GUTTER = 112
 export const TAIL = 160
 export const RULER_HEIGHT = 24
-export const VIDEO_ROW_HEIGHT = 48
+export const VIDEO_ROW_HEIGHT = 52
 export const AUDIO_ROW_HEIGHT = 36
 export const ROW_GAP = 6
 export const CLIP_GAP = 4
@@ -64,7 +64,7 @@ export function overlayLayout(overlays: readonly Overlay[]): OverlayLayout {
     lanes.set(overlay.id, lane)
   }
   const count = Math.max(laneEnds.length, 1)
-  const chipHeight = count > 1 ? 18 : 24
+  const chipHeight = count > 1 ? 20 : 30
   return {
     lanes,
     chipHeight,

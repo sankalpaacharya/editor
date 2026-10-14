@@ -1,7 +1,7 @@
+import type { ComponentProps } from 'react'
 import {
   Delete02Icon,
   RedoIcon,
-  ScissorIcon,
   SearchAddIcon,
   SearchMinusIcon,
   UndoIcon
@@ -15,9 +15,11 @@ interface ToolbarProps {
   canUndo: boolean
   canRedo: boolean
   canDelete: boolean
+  canDuplicate: boolean
   onUndo: () => void
   onRedo: () => void
   onSplit: () => void
+  onDuplicate: () => void
   onDelete: () => void
   zoom: number
   onZoom: (zoom: number) => void
@@ -25,11 +27,20 @@ interface ToolbarProps {
 
 const ZOOM_STEP = 0.1
 
-export function Toolbar(props: ToolbarProps) {
-  const { duration, zoom, onZoom } = props
-  const empty = duration === 0
+function TextAction(props: ComponentProps<'button'>) {
   return (
-    <div className="mx-2 mt-2 flex h-9 shrink-0 items-center justify-between rounded-lg bg-muted px-1.5">
+    <button
+      type="button"
+      className="rounded-md px-2.5 py-1.5 text-sm text-foreground/90 transition-colors outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40"
+      {...props}
+    />
+  )
+}
+
+export function Toolbar(props: ToolbarProps) {
+  const { zoom, onZoom } = props
+  return (
+    <div className="flex h-12 shrink-0 items-center justify-between border-t px-2">
       <div className="flex items-center gap-0.5">
         <IconButton
           icon={UndoIcon}
@@ -45,14 +56,6 @@ export function Toolbar(props: ToolbarProps) {
           disabled={!props.canRedo}
           onClick={props.onRedo}
         />
-        <div className="mx-1.5 h-4 w-px bg-border" />
-        <IconButton
-          icon={ScissorIcon}
-          label="Split at playhead"
-          shortcut={SHORTCUTS.split}
-          disabled={empty}
-          onClick={props.onSplit}
-        />
         <IconButton
           icon={Delete02Icon}
           label="Delete"
@@ -60,9 +63,7 @@ export function Toolbar(props: ToolbarProps) {
           disabled={!props.canDelete}
           onClick={props.onDelete}
         />
-      </div>
-
-      <div className="flex items-center justify-end gap-0.5">
+        <div className="mx-2 h-4 w-px bg-border" />
         <IconButton
           icon={SearchMinusIcon}
           label="Zoom out"
@@ -74,13 +75,25 @@ export function Toolbar(props: ToolbarProps) {
           max={100}
           step={1}
           onValueChange={([value]) => onZoom(value / 100)}
-          className="w-24"
+          className="w-20"
         />
         <IconButton
           icon={SearchAddIcon}
           label="Zoom in"
           onClick={() => onZoom(Math.min(zoom + ZOOM_STEP, 1))}
         />
+      </div>
+      <div className="flex items-center gap-0.5">
+        <TextAction
+          disabled={props.duration === 0}
+          onClick={props.onSplit}
+          title={`Split (${SHORTCUTS.split})`}
+        >
+          Split
+        </TextAction>
+        <TextAction disabled={!props.canDuplicate} onClick={props.onDuplicate}>
+          Duplicate
+        </TextAction>
       </div>
     </div>
   )

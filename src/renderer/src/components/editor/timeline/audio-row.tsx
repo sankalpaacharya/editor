@@ -1,3 +1,5 @@
+import { HugeiconsIcon } from '@hugeicons/react'
+import { VolumeHighIcon, VolumeMute02Icon } from '@hugeicons/core-free-icons'
 import { useEffect, useState, type CSSProperties, type PointerEvent } from 'react'
 import {
   AUDIO_ROW_HEIGHT,
@@ -48,7 +50,7 @@ export function AudioRow({
               onSelect({ kind: 'clip', id: clip.id })
             }}
             className={cn(
-              'absolute inset-y-0 overflow-hidden rounded-md bg-track-audio/25',
+              'absolute inset-y-0 overflow-hidden rounded-md bg-track-audio',
               clip.volume === 0 && 'opacity-40'
             )}
             style={{
@@ -61,10 +63,20 @@ export function AudioRow({
               style={sourceSpan(clip, media, pps)}
               volume={clip.volume}
             />
+            <div className="pointer-events-none absolute inset-y-0 left-1.5 flex items-center gap-1.5 text-xs text-white">
+              <span className="flex size-5 shrink-0 items-center justify-center rounded-[4px] bg-black/25">
+                <HugeiconsIcon
+                  icon={clip.volume === 0 ? VolumeMute02Icon : VolumeHighIcon}
+                  strokeWidth={2}
+                  className="size-3"
+                />
+              </span>
+              <span className="truncate">{hasAudio ? 'Original sound' : 'No audio'}</span>
+            </div>
             <div
               className={cn(
                 'pointer-events-none absolute inset-0 rounded-md ring-inset',
-                selection?.id === clip.id ? 'ring-2 ring-brand/70' : 'ring-1 ring-white/15'
+                selection?.id === clip.id ? 'ring-[3px] ring-selection' : 'ring-1 ring-white/20'
               )}
             />
           </div>
@@ -150,7 +162,7 @@ function Waveform({
     <svg
       viewBox={`0 0 ${peaks.count} 1`}
       preserveAspectRatio="none"
-      className="pointer-events-none absolute top-1/2 -translate-y-1/2 fill-white/75"
+      className="pointer-events-none absolute top-1/2 -translate-y-1/2 fill-white/25"
       style={{ ...style, height: `${Math.max(volume, 0.08) * 76}%` }}
     >
       <path d={peaks.path} />

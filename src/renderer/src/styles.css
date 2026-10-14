@@ -16,6 +16,7 @@
   --color-track-text: var(--track-text);
   --color-track-image: var(--track-image);
   --color-track-audio: var(--track-audio);
+  --color-selection: var(--selection);
   --font-heading: var(--font-sans);
   --font-sans: 'Inter Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -79,9 +80,9 @@
   --ring: #00bbff80;
   --brand: #00bbff;
   --brand-foreground: #04131a;
-  --track-text: #0f5a78;
-  --track-image: #6b4a12;
-  --track-audio: #2b3a52;
+  --track-text: #2b6b3c;
+  --track-image: #76852a;
+  --track-audio: #2b7fae;
   --chart-1: oklch(0.869 0.011 160);
   --chart-2: oklch(0.553 0.014 160);
   --chart-3: oklch(0.444 0.014 160);
@@ -96,6 +97,7 @@
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #ffffff0d;
   --sidebar-ring: #00bbff80;
+  --selection: #e2d12b;
 }
 
 @layer base {

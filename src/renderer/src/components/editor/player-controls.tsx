@@ -1,48 +1,50 @@
 import {
+  Backward01Icon,
+  Forward01Icon,
   NextIcon,
   PauseIcon,
   PlayIcon,
-  PreviousIcon,
-  VolumeHighIcon,
-  VolumeMute02Icon
+  PreviousIcon
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Slider } from '@/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import type { MasterVolume } from '@/components/editor/editor'
 import { IconButton } from '@/components/icon-button'
 import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
 import { formatClock } from '@/lib/format'
+
+const NUDGE_SECONDS = 5
 
 interface PlayerControlsProps {
   playing: boolean
   playhead: number
   duration: number
+  fps: number
   onToggle: () => void
   onSeek: (time: number) => void
-  master: MasterVolume
-  onMasterChange: (master: MasterVolume) => void
 }
 
 export function PlayerControls({
   playing,
   playhead,
   duration,
+  fps,
   onToggle,
-  onSeek,
-  master,
-  onMasterChange
+  onSeek
 }: PlayerControlsProps) {
   const empty = duration === 0
-  const audible = !master.muted && master.level > 0
   return (
-    <div className="grid h-11 shrink-0 grid-cols-[1fr_auto_1fr] items-center px-1">
-      <div className="text-xs tabular-nums">
-        <span>{formatClock(playhead)}</span>
-        <span className="text-muted-foreground"> / {formatClock(duration)}</span>
-      </div>
+    <div className="grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-t px-3">
+      <span className="text-xs text-muted-foreground tabular-nums">
+        {Math.round(playhead * fps)}/{Math.round(duration * fps)}
+      </span>
 
       <div className="flex items-center gap-1">
+        <IconButton
+          icon={Backward01Icon}
+          label="Back 5 seconds"
+          disabled={empty}
+          onClick={() => onSeek(Math.max(playhead - NUDGE_SECONDS, 0))}
+        />
         <IconButton
           icon={PreviousIcon}
           label="Go to start"
@@ -57,12 +59,12 @@ export function PlayerControls({
               aria-label={playing ? 'Pause' : 'Play'}
               disabled={empty}
               onClick={onToggle}
-              className="flex size-9 items-center justify-center rounded-full bg-brand text-brand-foreground transition-[filter,transform] outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 disabled:opacity-40"
+              className="flex size-9 items-center justify-center rounded-full text-foreground transition-[background-color,transform] outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring active:scale-95 disabled:opacity-40"
             >
               <HugeiconsIcon
                 icon={playing ? PauseIcon : PlayIcon}
                 strokeWidth={2}
-                className="size-4 fill-current"
+                className="size-5 fill-current"
               />
             </button>
           </TooltipTrigger>
@@ -78,24 +80,18 @@ export function PlayerControls({
           disabled={empty}
           onClick={() => onSeek(duration)}
         />
+        <IconButton
+          icon={Forward01Icon}
+          label="Forward 5 seconds"
+          disabled={empty}
+          onClick={() => onSeek(Math.min(playhead + NUDGE_SECONDS, duration))}
+        />
       </div>
 
-      <div className="flex items-center justify-end gap-1">
-        <IconButton
-          icon={audible ? VolumeHighIcon : VolumeMute02Icon}
-          label={master.muted ? 'Unmute preview' : 'Mute preview'}
-          aria-pressed={master.muted}
-          onClick={() => onMasterChange({ ...master, muted: !master.muted })}
-        />
-        <Slider
-          aria-label="Preview volume"
-          value={[master.muted ? 0 : master.level * 100]}
-          max={100}
-          step={1}
-          onValueChange={([percent]) => onMasterChange({ level: percent / 100, muted: false })}
-          className="w-20"
-        />
-      </div>
+      <span className="justify-self-end text-xs tabular-nums">
+        {formatClock(playhead)}
+        <span className="text-muted-foreground"> / {formatClock(duration)}</span>
+      </span>
     </div>
   )
 }

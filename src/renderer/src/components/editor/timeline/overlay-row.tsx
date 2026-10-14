@@ -65,9 +65,9 @@ export function OverlayRow({
             data-overlay-id={overlay.id}
             onPointerDown={(event) => press(event, overlay, 'move')}
             className={cn(
-              'group absolute flex cursor-grab items-center gap-1.5 overflow-hidden rounded-md pr-2 pl-1 text-[11px] font-medium text-white/90 ring-1 ring-white/15 ring-inset active:cursor-grabbing',
+              'group absolute flex cursor-grab items-center gap-2 overflow-hidden rounded-md pr-2 pl-1 text-xs text-white ring-1 ring-white/20 ring-inset active:cursor-grabbing',
               overlay.kind === 'text' ? 'bg-track-text' : 'bg-track-image',
-              selected && 'ring-2 ring-brand'
+              selected && 'ring-2 ring-selection'
             )}
             style={{
               top: overlayTop(layout, overlay.id),
@@ -79,7 +79,7 @@ export function OverlayRow({
           >
             <span
               className={cn(
-                'flex size-4 shrink-0 items-center justify-center rounded-[4px] bg-black/25'
+                'flex size-5 shrink-0 items-center justify-center rounded-[4px] bg-black/25'
               )}
             >
               <HugeiconsIcon
