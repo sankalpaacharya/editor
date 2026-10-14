@@ -1,30 +1,34 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
-import type { Project } from '../../../shared/project'
-import { errorMessage, type OpenProject } from '@/lib/editor'
+import type { ProjectId } from '../../../shared/api'
+import type { Sequence } from '../../../shared/sequence'
+import { errorMessage } from '@/lib/format'
 
-const DELAY = 500
+const DELAY_MS = 500
 
-export function useAutosave(open: OpenProject | null): () => Promise<void> {
-  const pending = useRef<Project | null>(null)
+/** Saves `sequence` shortly after it changes. The returned flush saves any pending change now. */
+export function useAutosave(projectId: ProjectId, sequence: Sequence): () => Promise<void> {
+  const saved = useRef(sequence)
+  const pending = useRef<Sequence | null>(null)
 
   const flush = useCallback(async () => {
-    const project = pending.current
+    const next = pending.current
     pending.current = null
-    if (!project) return
+    if (!next) return
     try {
-      await window.editor.saveProject(project)
+      await window.editor.saveSequence(projectId, next)
+      saved.current = next
     } catch (error) {
       toast.error('Could not save edits', { description: errorMessage(error) })
     }
-  }, [])
+  }, [projectId])
 
   useEffect(() => {
-    if (!open?.edited) return
-    pending.current = open.project
-    const timer = setTimeout(flush, DELAY)
+    if (sequence === saved.current) return
+    pending.current = sequence
+    const timer = setTimeout(flush, DELAY_MS)
     return () => clearTimeout(timer)
-  }, [open, flush])
+  }, [sequence, flush])
 
   useEffect(() => {
     const onUnload = () => void flush()

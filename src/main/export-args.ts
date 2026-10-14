@@ -1,9 +1,24 @@
-import type { AssetId, ImageOverlay, Project, TextOverlay } from '../shared/project'
+import {
+  timelineLength,
+  type Clip,
+  type Format,
+  type ImageOverlay,
+  type MediaId,
+  type MediaItem,
+  type Sequence,
+  type TextOverlay,
+  type VideoMedia
+} from '../shared/sequence'
+
+export interface ResolvedMedia {
+  path: string
+  media: MediaItem
+}
 
 export interface ExportInputs {
   outputPath: string
   fontPath: string
-  resolveAsset: (assetId: AssetId) => string
+  resolveMedia: (mediaId: MediaId) => ResolvedMedia
 }
 
 // Filter option values are unescaped twice: once by the filtergraph parser,
@@ -13,6 +28,7 @@ const escapeGraphValue = (value: string): string => value.replace(/[\\'[\],;]/g,
 const filterValue = (value: string): string => escapeGraphValue(escapeOptionValue(value))
 
 const ATEMPO_MIN = 0.5
+const AUDIO_FORMAT = 'aformat=sample_rates=48000:channel_layouts=stereo'
 
 function atempoChain(speed: number): string {
   if (speed === 1) return ''
@@ -44,23 +60,54 @@ function imageFilter(overlay: ImageOverlay): string {
   ].join(':')
 }
 
-export function buildExportArgs(project: Project, inputs: ExportInputs): string[] {
-  const { source, clips, overlays } = project
-  const imageOverlays = overlays.filter((overlay) => overlay.kind === 'image')
+function videoChain(clip: Clip, input: number, { width, height, fps }: Format): string {
+  return [
+    `[${input}:v:0]trim=start=${clip.in.toFixed(3)}:end=${clip.out.toFixed(3)}`,
+    `setpts=(PTS-STARTPTS)/${clip.speed}`,
+    `scale=${width}:${height}:force_original_aspect_ratio=decrease`,
+    `pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:black`,
+    'setsar=1',
+    `fps=${fps}`,
+    // When clips share an input, fps pads a segment up to the input's end-of-stream time
+    // (ffmpeg 6.0), which concat then plays as frozen frames. Cut it back to the clip.
+    `trim=duration=${timelineLength(clip).toFixed(3)}`
+  ].join(',')
+}
+
+function audioChain(clip: Clip, input: number, media: VideoMedia): string {
+  if (!media.hasAudio || clip.volume === 0) {
+    return `anullsrc=r=48000:cl=stereo,atrim=duration=${timelineLength(clip).toFixed(3)}`
+  }
+  const volume = clip.volume === 1 ? '' : `,volume=${clip.volume}`
+  return (
+    `[${input}:a:0]atrim=start=${clip.in.toFixed(3)}:end=${clip.out.toFixed(3)},` +
+    `asetpts=PTS-STARTPTS${atempoChain(clip.speed)}${volume},${AUDIO_FORMAT}`
+  )
+}
+
+function videoMedia(inputs: ExportInputs, mediaId: MediaId): VideoMedia {
+  const { media } = inputs.resolveMedia(mediaId)
+  if (media.kind !== 'video') throw new Error(`Clip media ${mediaId} is not a video`)
+  return media
+}
+
+export function buildExportArgs(sequence: Sequence, inputs: ExportInputs): string[] {
+  const { format, clips, overlays } = sequence
+  if (clips.length === 0) throw new Error('The sequence has no clips to export')
+
+  const videos = [...new Set(clips.map((clip) => clip.mediaId))]
+  const images = [
+    ...new Set(overlays.flatMap((overlay) => (overlay.kind === 'image' ? [overlay.mediaId] : [])))
+  ]
   const graph: string[] = []
 
-  const concatInputs = clips.map((clip, i) => {
-    const range = `start=${clip.in.toFixed(3)}:end=${clip.out.toFixed(3)}`
-    const retime = clip.speed === 1 ? '' : `,fps=${source.fps}`
-    graph.push(`[0:v]trim=${range},setpts=(PTS-STARTPTS)/${clip.speed}${retime}[v${i}]`)
-    if (!source.hasAudio) return `[v${i}]`
-    graph.push(`[0:a]atrim=${range},asetpts=PTS-STARTPTS${atempoChain(clip.speed)}[a${i}]`)
+  const segments = clips.map((clip, i) => {
+    const input = videos.indexOf(clip.mediaId)
+    graph.push(`${videoChain(clip, input, format)}[v${i}]`)
+    graph.push(`${audioChain(clip, input, videoMedia(inputs, clip.mediaId))}[a${i}]`)
     return `[v${i}][a${i}]`
   })
-  const audio = source.hasAudio ? 1 : 0
-  graph.push(
-    `${concatInputs.join('')}concat=n=${clips.length}:v=1:a=${audio}[base]${audio ? '[aout]' : ''}`
-  )
+  graph.push(`${segments.join('')}concat=n=${clips.length}:v=1:a=1[base][aout]`)
 
   let current = 'base'
   overlays.forEach((overlay, i) => {
@@ -68,9 +115,9 @@ export function buildExportArgs(project: Project, inputs: ExportInputs): string[
     if (overlay.kind === 'text') {
       graph.push(`[${current}]${textFilter(overlay, inputs.fontPath)}[${next}]`)
     } else {
-      const input = imageOverlays.indexOf(overlay) + 1
-      const width = Math.max(2, Math.round((source.width * overlay.widthRatio) / 2) * 2)
-      graph.push(`[${input}:v]scale=${width}:-2[img${i}]`)
+      const input = videos.length + images.indexOf(overlay.mediaId)
+      const width = Math.max(2, Math.round((format.width * overlay.widthRatio) / 2) * 2)
+      graph.push(`[${input}:v:0]scale=${width}:-2[img${i}]`)
       graph.push(`[${current}][img${i}]${imageFilter(overlay)}[${next}]`)
     }
     current = next
@@ -79,14 +126,17 @@ export function buildExportArgs(project: Project, inputs: ExportInputs): string[
   return [
     '-hide_banner',
     '-y',
-    '-i',
-    inputs.resolveAsset(source.assetId),
-    ...imageOverlays.flatMap((overlay) => ['-i', inputs.resolveAsset(overlay.image.assetId)]),
+    ...[...videos, ...images].flatMap((id) => ['-i', inputs.resolveMedia(id).path]),
     '-filter_complex',
     graph.join(';'),
     '-map',
     `[${current}]`,
-    ...(source.hasAudio ? ['-map', '[aout]', '-c:a', 'aac', '-b:a', '192k'] : []),
+    '-map',
+    '[aout]',
+    '-c:a',
+    'aac',
+    '-b:a',
+    '192k',
     '-c:v',
     'libx264',
     '-preset',

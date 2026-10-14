@@ -1,9 +1,8 @@
 import { spawn } from 'node:child_process'
 import { rm } from 'node:fs/promises'
-import { timelineDuration, type Project } from '../shared/project'
-import type { ExportResult } from '../shared/api'
-import { FFMPEG_PATH, FONT_PATH, resolveAsset } from './assets'
-import { buildExportArgs, parseProgressSeconds } from './export-args'
+import { timelineDuration, type Sequence } from '../shared/sequence'
+import { FFMPEG_PATH, FONT_PATH } from './ffmpeg'
+import { buildExportArgs, parseProgressSeconds, type ExportInputs } from './export-args'
 
 let cancelCurrent: (() => void) | null = null
 
@@ -11,15 +10,18 @@ export function cancelExport(): void {
   cancelCurrent?.()
 }
 
+type JobResult = { status: 'done' } | { status: 'canceled' }
+
 export function runExport(
-  project: Project,
+  sequence: Sequence,
   outputPath: string,
+  resolveMedia: ExportInputs['resolveMedia'],
   onProgress: (fraction: number) => void
-): Promise<ExportResult> {
+): Promise<JobResult> {
   if (cancelCurrent) return Promise.reject(new Error('An export is already running'))
 
-  const args = buildExportArgs(project, { outputPath, fontPath: FONT_PATH, resolveAsset })
-  const total = timelineDuration(project.clips)
+  const args = buildExportArgs(sequence, { outputPath, fontPath: FONT_PATH, resolveMedia })
+  const total = timelineDuration(sequence.clips)
   const ffmpeg = spawn(FFMPEG_PATH, args, { stdio: ['ignore', 'pipe', 'pipe'] })
   let canceled = false
   let stderr = ''
@@ -36,7 +38,7 @@ export function runExport(
     stderr = (stderr + chunk).slice(-4000)
   })
 
-  return new Promise<ExportResult>((resolve, reject) => {
+  return new Promise<JobResult>((resolve, reject) => {
     ffmpeg.on('error', reject)
     ffmpeg.on('close', async (code) => {
       cancelCurrent = null
@@ -44,7 +46,7 @@ export function runExport(
         await rm(outputPath, { force: true })
         resolve({ status: 'canceled' })
       } else if (code === 0) {
-        resolve({ status: 'done', path: outputPath })
+        resolve({ status: 'done' })
       } else {
         reject(new Error(`ffmpeg exited with code ${code}\n${stderr}`))
       }

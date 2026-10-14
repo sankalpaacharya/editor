@@ -1,14 +1,10 @@
-import { pathToFileURL } from 'node:url'
 import { join } from 'node:path'
-import { app, BrowserWindow, net, protocol, shell } from 'electron'
-import { MEDIA_SCHEME } from '../shared/api'
-import { resolveAsset } from './assets'
+import { app, BrowserWindow, shell } from 'electron'
 import { registerIpc } from './ipc'
 import { setApplicationMenu } from './menu'
+import { handleMediaProtocol, registerMediaScheme } from './protocol'
 
-protocol.registerSchemesAsPrivileged([
-  { scheme: MEDIA_SCHEME, privileges: { standard: true, secure: true, stream: true } }
-])
+registerMediaScheme()
 
 function createWindow(): void {
   const window = new BrowserWindow({
@@ -40,12 +36,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
-  protocol.handle(MEDIA_SCHEME, (request) => {
-    const assetId = new URL(request.url).hostname
-    return net.fetch(pathToFileURL(resolveAsset(assetId)).toString(), {
-      headers: request.headers
-    })
-  })
+  handleMediaProtocol()
   registerIpc()
   setApplicationMenu()
   createWindow()
