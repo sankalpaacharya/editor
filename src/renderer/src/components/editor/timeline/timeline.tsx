@@ -53,7 +53,7 @@ import {
 } from '../../../../../shared/sequence'
 import { draggedMediaId, isImageDrag, isMediaDrag } from '@/lib/media-drag'
 import { trackPointer } from '@/lib/pointer'
-import { isAdditive, onlySelected, type Select, type Selection } from '@/lib/selection'
+import { isAdditive, type Select, type Selection } from '@/lib/selection'
 import { clamp } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -74,8 +74,6 @@ interface TimelineProps {
   canRedo: boolean
   onUndo: () => void
   onRedo: () => void
-  onSplit: () => void
-  onDuplicate: () => void
   onDelete: () => void
   onDropMedia: (item: MediaItem, at: { index?: number; time?: number }) => void
 }
@@ -335,9 +333,7 @@ export function Timeline({
       </div>
       <Toolbar
         {...toolbar}
-        duration={duration}
         canDelete={selection.length > 0}
-        canDuplicate={onlySelected(selection)?.kind === 'clip'}
         zoom={zoom}
         onZoom={zoomTo}
         snapping={snapping}

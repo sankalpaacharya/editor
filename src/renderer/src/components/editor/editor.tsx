@@ -1,13 +1,13 @@
 import { useMemo, useReducer, useState } from 'react'
-import { Folder01Icon, Image01Icon } from '@hugeicons/core-free-icons'
+import { Folder01Icon, Image01Icon, TextIcon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { Rail } from '@/components/rail'
 import { EditorHeader } from '@/components/editor/header'
 import { ExportDialog } from '@/components/editor/export-dialog'
 import { Inspector } from '@/components/editor/inspector/inspector'
 import { MediaPanel } from '@/components/editor/media-panel'
+import { TextPanel } from '@/components/editor/text-panel'
 import { Preview } from '@/components/editor/preview'
-import { InsertBar } from '@/components/editor/insert-bar'
 import { PlayerControls } from '@/components/editor/player-controls'
 import { Timeline } from '@/components/editor/timeline/timeline'
 import { useAutosave } from '@/hooks/use-autosave'
@@ -19,7 +19,7 @@ import type { OpenProject } from '../../../../shared/api'
 import type { ImageMedia, MediaId, MediaItem, SequenceAction } from '../../../../shared/sequence'
 import { errorMessage } from '@/lib/format'
 import { historyReducer, initialHistory } from '@/lib/history'
-import { newImageOverlay, newTextOverlay, type TextPreset } from '@/lib/overlays'
+import { newImageOverlay, newTextOverlay, TEXT_PRESETS, type TextPreset } from '@/lib/overlays'
 import { nextSelection, onlySelected, type Select, type Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
 
@@ -39,6 +39,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
   const [selection, setSelection] = useState<Selection>([])
   const select: Select = (item, additive) =>
     setSelection((current) => nextSelection(current, item, additive))
+  const [panel, setPanel] = useState<'media' | 'text'>('media')
   const [master, setMaster] = useState<MasterVolume>({ level: 1, muted: false })
   const audible = !master.muted && sequence.tracks.audio.enabled
   const playback = usePlayback(sequence.clips, audible ? master.level : 0)
@@ -64,12 +65,10 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
     ])
     setMissing((current) => new Set([...current].filter((id) => !items.some((i) => i.id === id))))
   }
-  const importMedia = (kind?: MediaItem['kind'], insert = false) =>
-    guard('Could not import media', async () => {
-      const items = await window.editor.importMedia(project.id, kind)
-      addImported(items)
-      if (insert) items.forEach((item) => addMedia(item))
-    })
+  const importMedia = () =>
+    guard('Could not import media', async () =>
+      addImported(await window.editor.importMedia(project.id))
+    )
   const [dropping, dropProps] = useFileDrop((files) =>
     guard('Could not import files', async () =>
       addImported(await window.editor.importMediaFiles(project.id, files))
@@ -146,6 +145,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
     pause: () => playback.playing && playback.toggle(),
     split,
     duplicate,
+    addText: () => duration > 0 && addText(TEXT_PRESETS[0]),
     selectAll,
     clearSelection: () => setSelection([]),
     deleteSelection,
@@ -182,8 +182,14 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
             {
               label: 'Media',
               icon: Image01Icon,
-              active: true,
-              onSelect() {}
+              active: panel === 'media',
+              onSelect: () => setPanel('media')
+            },
+            {
+              label: 'Text',
+              icon: TextIcon,
+              active: panel === 'text',
+              onSelect: () => setPanel('text')
             }
           ]
         ]}
@@ -195,23 +201,20 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
           onRename={rename}
           canExport={sequence.clips.length > 0 && exporter.state.status === 'idle'}
           onExport={() => exporter.start(sequence)}
-        >
-          <InsertBar
-            canOverlay={duration > 0}
-            onVideo={() => importMedia('video', true)}
-            onImage={() => importMedia('image', true)}
-            onText={addText}
-          />
-        </EditorHeader>
+        />
         <div className="flex min-h-0 flex-1 gap-2">
-          <MediaPanel
-            media={media}
-            missing={missing}
-            sequence={sequence}
-            onImport={() => importMedia()}
-            onAdd={(item) => addMedia(item)}
-            onRemove={removeMedia}
-          />
+          {panel === 'media' ? (
+            <MediaPanel
+              media={media}
+              missing={missing}
+              sequence={sequence}
+              onImport={() => importMedia()}
+              onAdd={(item) => addMedia(item)}
+              onRemove={removeMedia}
+            />
+          ) : (
+            <TextPanel canAdd={duration > 0} onAdd={addText} />
+          )}
           <Preview
             sequence={sequence}
             mediaById={mediaById}
@@ -256,8 +259,6 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
           canRedo={history.future.length > 0}
           onUndo={undo}
           onRedo={redo}
-          onSplit={split}
-          onDuplicate={duplicate}
           onDelete={deleteSelection}
           onDropMedia={addMedia}
         />

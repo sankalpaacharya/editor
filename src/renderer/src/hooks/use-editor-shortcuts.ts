@@ -7,6 +7,7 @@ interface Commands {
   split: () => void
   duplicate: () => void
   selectAll: () => void
+  addText: () => void
   clearSelection: () => void
   deleteSelection: () => void
   undo: () => void
@@ -33,6 +34,7 @@ export function useEditorShortcuts(commands: Commands) {
       else return
     } else if (key === ' ') commands.togglePlay()
     else if (key === 'escape') commands.clearSelection()
+    else if (key === 't') commands.addText()
     else if (key === 'k') commands.pause()
     else if (key === 'l') commands.play()
     else if (key === 'j') commands.step(-1, 'second')

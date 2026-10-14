@@ -1,4 +1,3 @@
-import type { ComponentProps } from 'react'
 import {
   Delete02Icon,
   Magnet01Icon,
@@ -13,15 +12,11 @@ import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
 import { cn } from '@/lib/utils'
 
 interface ToolbarProps {
-  duration: number
   canUndo: boolean
   canRedo: boolean
   canDelete: boolean
-  canDuplicate: boolean
   onUndo: () => void
   onRedo: () => void
-  onSplit: () => void
-  onDuplicate: () => void
   onDelete: () => void
   zoom: number
   onZoom: (zoom: number) => void
@@ -30,16 +25,6 @@ interface ToolbarProps {
 }
 
 const ZOOM_STEP = 0.1
-
-function TextAction(props: ComponentProps<'button'>) {
-  return (
-    <button
-      type="button"
-      className="rounded-md px-2.5 py-1.5 text-sm text-foreground/90 transition-colors outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40"
-      {...props}
-    />
-  )
-}
 
 export function Toolbar(props: ToolbarProps) {
   const { zoom, onZoom } = props
@@ -97,22 +82,6 @@ export function Toolbar(props: ToolbarProps) {
           shortcut={SHORTCUTS.zoomIn}
           onClick={() => onZoom(Math.min(zoom + ZOOM_STEP, 1))}
         />
-      </div>
-      <div className="flex items-center gap-0.5">
-        <TextAction
-          disabled={props.duration === 0}
-          onClick={props.onSplit}
-          title={`Split (${SHORTCUTS.split})`}
-        >
-          Split
-        </TextAction>
-        <TextAction
-          disabled={!props.canDuplicate}
-          onClick={props.onDuplicate}
-          title={`Duplicate (${SHORTCUTS.duplicate})`}
-        >
-          Duplicate
-        </TextAction>
       </div>
     </div>
   )
