@@ -8,7 +8,7 @@ import {
 } from 'react'
 import { mediaUrl } from '../../../../shared/api'
 import type { ImageMedia, MediaId, MediaItem, Overlay, Sequence } from '../../../../shared/sequence'
-import type { Edit, MasterVolume } from '@/components/editor/editor'
+import type { Edit } from '@/components/editor/editor'
 import { Panel } from '@/components/editor/panel'
 import { useElementSize } from '@/hooks/use-element-size'
 import { clamp } from '@/lib/format'
@@ -16,9 +16,6 @@ import { draggedMediaId, isMediaDrag } from '@/lib/media-drag'
 import { trackPointer } from '@/lib/pointer'
 import { isAdditive, isSelected, type Select, type Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
-import { VolumeHighIcon, VolumeMute02Icon } from '@hugeicons/core-free-icons'
-import { Slider } from '@/components/ui/slider'
-import { IconButton } from '@/components/icon-button'
 
 const MARGIN = 12
 
@@ -32,8 +29,6 @@ interface PreviewProps {
   onSelect: Select
   edit: Edit
   onDropImage: (image: ImageMedia, position: { x: number; y: number }) => void
-  master: MasterVolume
-  onMasterChange: (master: MasterVolume) => void
   children?: ReactNode
 }
 
@@ -47,8 +42,6 @@ export function Preview({
   onSelect,
   edit,
   onDropImage,
-  master,
-  onMasterChange,
   children
 }: PreviewProps) {
   const [areaRef, area] = useElementSize<HTMLDivElement>()
@@ -99,7 +92,6 @@ export function Preview({
 
   return (
     <Panel className="min-w-0 flex-1 flex-row">
-      <VolumeColumn master={master} onChange={onMasterChange} />
       <div className="flex min-w-0 flex-1 flex-col border-l">
         <div
           ref={areaRef}
@@ -209,34 +201,5 @@ function PreviewVideo({ id, visible, registerVideo }: PreviewVideoProps) {
       preload="auto"
       className={cn('absolute inset-0 size-full object-contain', !visible && 'invisible')}
     />
-  )
-}
-
-function VolumeColumn({
-  master,
-  onChange
-}: {
-  master: MasterVolume
-  onChange: (master: MasterVolume) => void
-}) {
-  const level = master.muted ? 0 : master.level
-  return (
-    <div className="flex w-11 shrink-0 flex-col items-center gap-3 py-4">
-      <Slider
-        orientation="vertical"
-        aria-label="Preview volume"
-        value={[level * 100]}
-        max={100}
-        step={1}
-        onValueChange={([percent]) => onChange({ level: percent / 100, muted: false })}
-        className="min-h-0 flex-1"
-      />
-      <IconButton
-        icon={level > 0 ? VolumeHighIcon : VolumeMute02Icon}
-        label={master.muted ? 'Unmute preview' : 'Mute preview'}
-        aria-pressed={master.muted}
-        onClick={() => onChange({ ...master, muted: !master.muted })}
-      />
-    </div>
   )
 }

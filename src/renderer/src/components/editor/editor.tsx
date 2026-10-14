@@ -32,10 +32,6 @@ import { cn } from '@/lib/utils'
 
 export type Edit = (action: SequenceAction, coalesce?: string) => void
 
-export interface MasterVolume {
-  level: number
-  muted: boolean
-}
 
 export function Editor({ project, onClose }: { project: OpenProject; onClose: () => void }) {
   const [history, dispatch] = useReducer(historyReducer, project.sequence, initialHistory)
@@ -47,9 +43,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
   const select: Select = (item, additive) =>
     setSelection((current) => nextSelection(current, item, additive))
   const [panel, setPanel] = useState<'media' | 'text'>('media')
-  const [master, setMaster] = useState<MasterVolume>({ level: 1, muted: false })
-  const audible = !master.muted && sequence.tracks.audio.enabled
-  const playback = usePlayback(sequence.clips, audible ? master.level : 0)
+  const playback = usePlayback(sequence.clips, sequence.tracks.audio.enabled ? 1 : 0)
   const { playhead, duration, seek } = playback
   const flush = useAutosave(project.id, sequence)
   const exporter = useExport(project.id)
@@ -258,8 +252,6 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
             onSelect={select}
             edit={edit}
             onDropImage={(image, position) => addImage(image, playhead, position)}
-            master={master}
-            onMasterChange={setMaster}
           >
             <PlayerControls
               playing={playback.playing}
