@@ -1,4 +1,11 @@
-import { useCallback, useRef, useState, type DragEvent, type PointerEvent } from 'react'
+import {
+  useCallback,
+  useRef,
+  useState,
+  type DragEvent,
+  type PointerEvent,
+  type ReactNode
+} from 'react'
 import { mediaUrl } from '../../../../shared/api'
 import type { ImageMedia, MediaId, MediaItem, Overlay, Sequence } from '../../../../shared/sequence'
 import type { Edit } from '@/components/editor/editor'
@@ -22,6 +29,7 @@ interface PreviewProps {
   onSelect: (selection: Selection) => void
   edit: Edit
   onDropImage: (image: ImageMedia, position: { x: number; y: number }) => void
+  children?: ReactNode
 }
 
 export function Preview({
@@ -33,7 +41,8 @@ export function Preview({
   selection,
   onSelect,
   edit,
-  onDropImage
+  onDropImage,
+  children
 }: PreviewProps) {
   const [areaRef, area] = useElementSize<HTMLDivElement>()
   const frameRef = useRef<HTMLDivElement>(null)
@@ -158,6 +167,7 @@ export function Preview({
             ))}
         </div>
       </div>
+      {children}
     </Panel>
   )
 }

@@ -1,5 +1,10 @@
-import type { CSSProperties, PointerEvent } from 'react'
-import { AUDIO_ROW_HEIGHT, sourceSpan, type ClipDrag } from '@/components/editor/timeline/geometry'
+import { useEffect, useState, type CSSProperties, type PointerEvent } from 'react'
+import {
+  AUDIO_ROW_HEIGHT,
+  clipBox,
+  sourceSpan,
+  type ClipDrag
+} from '@/components/editor/timeline/geometry'
 import { mediaUrl } from '../../../../../shared/api'
 import {
   timelineLength,
@@ -7,7 +12,6 @@ import {
   type MediaId,
   type MediaItem
 } from '../../../../../shared/sequence'
-import { useImageStatus } from '@/hooks/use-image-status'
 import type { Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
 
@@ -31,7 +35,7 @@ export function AudioRow({
   onSelect
 }: AudioRowProps) {
   return (
-    <div className="relative" style={{ height: AUDIO_ROW_HEIGHT }}>
+    <div className="relative rounded-md bg-white/[0.02]" style={{ height: AUDIO_ROW_HEIGHT }}>
       {clips.map((clip, index) => {
         const media = mediaById.get(clip.mediaId)
         const offset = drag?.clipId === clip.id ? drag.dx : 0
@@ -44,13 +48,11 @@ export function AudioRow({
               onSelect({ kind: 'clip', id: clip.id })
             }}
             className={cn(
-              'absolute inset-y-0 overflow-hidden rounded-md bg-track-audio/45 ring-1 ring-track-audio/60 ring-inset',
-              selection?.id === clip.id && 'ring-brand/70',
-              clip.volume === 0 && 'opacity-50'
+              'absolute inset-y-0 overflow-hidden rounded-md bg-track-audio/25',
+              clip.volume === 0 && 'opacity-40'
             )}
             style={{
-              left: starts[index] * pps + 1,
-              width: Math.max(timelineLength(clip) * pps - 2, 2),
+              ...clipBox(starts[index], timelineLength(clip), pps),
               transform: offset ? `translateX(${offset}px)` : undefined
             }}
           >
@@ -59,11 +61,76 @@ export function AudioRow({
               style={sourceSpan(clip, media, pps)}
               volume={clip.volume}
             />
+            <div
+              className={cn(
+                'pointer-events-none absolute inset-0 rounded-md ring-inset',
+                selection?.id === clip.id ? 'ring-2 ring-brand/70' : 'ring-1 ring-white/15'
+              )}
+            />
           </div>
         )
       })}
     </div>
   )
+}
+
+interface Peaks {
+  count: number
+  path: string
+}
+
+const peaksByUrl = new Map<string, Promise<Peaks | null>>()
+
+async function loadPeaks(url: string): Promise<Peaks | null> {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) return null
+    const bitmap = await createImageBitmap(await response.blob())
+    const { width, height } = bitmap
+    const context = new OffscreenCanvas(width, height).getContext('2d')
+    if (!context) return null
+    context.drawImage(bitmap, 0, 0)
+    const { data } = context.getImageData(0, 0, width, height)
+    const middle = height / 2
+    const extents = Array.from({ length: width }, (_, x) => {
+      let extent = 0
+      for (let y = 0; y < height; y++) {
+        if (data[(y * width + x) * 4 + 3] > 32) {
+          extent = Math.max(extent, Math.abs(y + 0.5 - middle))
+        }
+      }
+      return extent / middle
+    })
+    const loudest = Math.max(...extents, 1e-3)
+    // The generated PNG is linear, so speech peaks are a few pixels tall. Normalizing to the
+    // loudest column and taking a square root keeps quiet passages readable.
+    const levels = extents.map((extent) => Math.max(Math.sqrt(extent / loudest), 0.04) / 2)
+    const top = levels.map((level, x) => `${x + 0.5} ${(0.5 - level).toFixed(3)}`)
+    const bottom = levels.map((level, x) => `${x + 0.5} ${(0.5 + level).toFixed(3)}`).reverse()
+    return { count: width, path: `M${[...top, ...bottom].join('L')}Z` }
+  } catch {
+    return null
+  }
+}
+
+function usePeaks(url: string | null): Peaks | null {
+  const [loaded, setLoaded] = useState<{ url: string; peaks: Peaks | null } | null>(null)
+  useEffect(() => {
+    if (url === null) return
+    let job = peaksByUrl.get(url)
+    if (!job) {
+      job = loadPeaks(url)
+      peaksByUrl.set(url, job)
+    }
+    let live = true
+    void job.then((peaks) => {
+      if (live) setLoaded({ url, peaks })
+    })
+    return () => {
+      live = false
+    }
+  }, [url])
+  return loaded?.url === url ? loaded.peaks : null
 }
 
 function Waveform({
@@ -75,17 +142,18 @@ function Waveform({
   style: CSSProperties
   volume: number
 }) {
-  const status = useImageStatus(url)
-  if (status !== 'loaded' || url === null) {
-    return <div className="absolute inset-x-1 top-1/2 h-px bg-white/30" />
+  const peaks = usePeaks(url)
+  if (peaks === null) {
+    return <div className="absolute inset-x-2 top-1/2 h-px bg-white/30" />
   }
   return (
-    <img
-      src={url}
-      alt=""
-      draggable={false}
-      className="pointer-events-none absolute top-1/2 max-w-none -translate-y-1/2 opacity-60"
-      style={{ ...style, height: `${Math.max(volume, 0.08) * 100}%` }}
-    />
+    <svg
+      viewBox={`0 0 ${peaks.count} 1`}
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute top-1/2 -translate-y-1/2 fill-white/75"
+      style={{ ...style, height: `${Math.max(volume, 0.08) * 76}%` }}
+    >
+      <path d={peaks.path} />
+    </svg>
   )
 }

@@ -2,11 +2,7 @@ import type { PointerEvent } from 'react'
 import { Image01Icon, TextIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { Edit } from '@/components/editor/editor'
-import {
-  OVERLAY_LANE_HEIGHT,
-  overlayLanes,
-  overlayRowHeight
-} from '@/components/editor/timeline/geometry'
+import { overlayLayout, overlayTop } from '@/components/editor/timeline/geometry'
 import type { MediaId, MediaItem, Overlay } from '../../../../../shared/sequence'
 import { MIN_CLIP_LENGTH } from '../../../../../shared/sequence'
 import { clamp } from '@/lib/format'
@@ -35,7 +31,7 @@ export function OverlayRow({
   onSelect,
   edit
 }: OverlayRowProps) {
-  const lanes = overlayLanes(overlays)
+  const layout = overlayLayout(overlays)
 
   function press(event: PointerEvent<HTMLElement>, overlay: Overlay, mode: DragMode) {
     event.stopPropagation()
@@ -58,7 +54,7 @@ export function OverlayRow({
   }
 
   return (
-    <div className="relative" style={{ height: overlayRowHeight(overlays) }}>
+    <div className="relative rounded-md bg-white/[0.02]" style={{ height: layout.rowHeight }}>
       {overlays.map((overlay) => {
         const selected = selection?.id === overlay.id
         const label =
@@ -69,22 +65,21 @@ export function OverlayRow({
             data-overlay-id={overlay.id}
             onPointerDown={(event) => press(event, overlay, 'move')}
             className={cn(
-              'group absolute flex cursor-grab items-center gap-1 overflow-hidden rounded-[5px] pr-1.5 pl-0.5 text-[11px] text-white/90 ring-1 ring-white/10 ring-inset active:cursor-grabbing',
-              overlay.kind === 'text' ? 'bg-track-text/70' : 'bg-track-image/70',
-              selected && 'ring-brand'
+              'group absolute flex cursor-grab items-center gap-1.5 overflow-hidden rounded-md pr-2 pl-1 text-[11px] font-medium text-white/90 ring-1 ring-white/15 ring-inset active:cursor-grabbing',
+              overlay.kind === 'text' ? 'bg-track-text' : 'bg-track-image',
+              selected && 'ring-2 ring-brand'
             )}
             style={{
-              top: 3 + (lanes.get(overlay.id) ?? 0) * OVERLAY_LANE_HEIGHT,
-              height: OVERLAY_LANE_HEIGHT - 3,
-              left: overlay.start * pps,
-              width: Math.max((overlay.end - overlay.start) * pps, 6)
+              top: overlayTop(layout, overlay.id),
+              height: layout.chipHeight,
+              left: overlay.start * pps + 1,
+              width: Math.max((overlay.end - overlay.start) * pps - 2, 6)
             }}
             title={label}
           >
             <span
               className={cn(
-                'flex size-3.5 shrink-0 items-center justify-center rounded-[3px]',
-                overlay.kind === 'text' ? 'bg-track-text' : 'bg-track-image'
+                'flex size-4 shrink-0 items-center justify-center rounded-[4px] bg-black/25'
               )}
             >
               <HugeiconsIcon

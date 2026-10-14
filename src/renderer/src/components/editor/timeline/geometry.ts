@@ -6,13 +6,15 @@ import {
   type Overlay
 } from '../../../../../shared/sequence'
 
-export const GUTTER = 40
+export const GUTTER = 32
 export const TAIL = 160
-export const RULER_HEIGHT = 26
-export const OVERLAY_LANE_HEIGHT = 22
-export const VIDEO_ROW_HEIGHT = 52
-export const AUDIO_ROW_HEIGHT = 34
+export const RULER_HEIGHT = 24
+export const VIDEO_ROW_HEIGHT = 48
+export const AUDIO_ROW_HEIGHT = 36
 export const ROW_GAP = 6
+export const CLIP_GAP = 4
+const MAX_OVERLAY_LANES = 3
+const OVERLAY_LANE_GAP = 2
 
 export interface ClipDrag {
   clipId: string
@@ -41,21 +43,44 @@ export function insertionIndex(clips: readonly Clip[], time: number, skip = -1):
   ).length
 }
 
-export function overlayRowHeight(overlays: readonly Overlay[]): number {
-  const lanes = Math.max(...overlayLanes(overlays).values(), 0) + 1
-  return lanes * OVERLAY_LANE_HEIGHT + 6
+export interface OverlayLayout {
+  lanes: Map<string, number>
+  chipHeight: number
+  rowHeight: number
 }
 
-export function overlayLanes(overlays: readonly Overlay[]): Map<string, number> {
+export function overlayLayout(overlays: readonly Overlay[]): OverlayLayout {
   const laneEnds: number[] = []
   const lanes = new Map<string, number>()
   for (const overlay of [...overlays].sort((a, b) => a.start - b.start)) {
     let lane = laneEnds.findIndex((end) => end <= overlay.start)
-    if (lane === -1) lane = laneEnds.length
+    if (lane === -1) {
+      lane =
+        laneEnds.length < MAX_OVERLAY_LANES
+          ? laneEnds.length
+          : laneEnds.indexOf(Math.min(...laneEnds))
+    }
     laneEnds[lane] = overlay.end
     lanes.set(overlay.id, lane)
   }
-  return lanes
+  const count = Math.max(laneEnds.length, 1)
+  const chipHeight = count > 1 ? 18 : 24
+  return {
+    lanes,
+    chipHeight,
+    rowHeight: count * (chipHeight + OVERLAY_LANE_GAP) + OVERLAY_LANE_GAP
+  }
+}
+
+export function overlayTop(layout: OverlayLayout, id: string): number {
+  return OVERLAY_LANE_GAP + (layout.lanes.get(id) ?? 0) * (layout.chipHeight + OVERLAY_LANE_GAP)
+}
+
+export function clipBox(start: number, length: number, pps: number): CSSProperties {
+  return {
+    left: start * pps + CLIP_GAP / 2,
+    width: Math.max(length * pps - CLIP_GAP, 2)
+  }
 }
 
 const TICK_STEPS = [0.1, 0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600]

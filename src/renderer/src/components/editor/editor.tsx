@@ -8,6 +8,7 @@ import { Inspector } from '@/components/editor/inspector/inspector'
 import { MediaPanel } from '@/components/editor/media-panel'
 import { Preview } from '@/components/editor/preview'
 import { InsertBar } from '@/components/editor/insert-bar'
+import { PlayerControls } from '@/components/editor/player-controls'
 import { Timeline } from '@/components/editor/timeline/timeline'
 import { useAutosave } from '@/hooks/use-autosave'
 import { useEditorShortcuts } from '@/hooks/use-editor-shortcuts'
@@ -193,7 +194,17 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
             onSelect={setSelection}
             edit={edit}
             onDropImage={(image, position) => addImage(image, playhead, position)}
-          />
+          >
+            <PlayerControls
+              playing={playback.playing}
+              playhead={playhead}
+              duration={duration}
+              onToggle={playback.toggle}
+              onSeek={playback.seek}
+              master={master}
+              onMasterChange={setMaster}
+            />
+          </Preview>
           <Inspector
             projectId={project.id}
             sequence={sequence}
@@ -218,8 +229,6 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
           onRedo={redo}
           onSplit={split}
           onDelete={deleteSelection}
-          master={master}
-          onMasterChange={setMaster}
           onDropMedia={addMedia}
         />
       </div>

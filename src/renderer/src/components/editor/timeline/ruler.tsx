@@ -21,20 +21,20 @@ export function Ruler({ pixelsPerSecond, width, onScrub }: RulerProps) {
         height: RULER_HEIGHT,
         width,
         backgroundImage:
-          'linear-gradient(to right, color-mix(in oklch, var(--foreground) 18%, transparent) 1px, transparent 1px)',
-        backgroundSize: `${spacing / MINOR_TICKS}px 4px`,
-        backgroundPosition: '0 100%',
+          'radial-gradient(circle, color-mix(in oklch, var(--foreground) 28%, transparent) 1px, transparent 1.5px)',
+        backgroundSize: `${spacing / MINOR_TICKS}px ${RULER_HEIGHT}px`,
+        backgroundPosition: `${-spacing / MINOR_TICKS / 2}px 0`,
         backgroundRepeat: 'repeat-x'
       }}
     >
       {Array.from({ length: count }, (_, i) => (
-        <div
+        <span
           key={i}
-          className="absolute bottom-0 h-2.5 border-l border-foreground/30"
-          style={{ left: i * spacing }}
+          className="absolute top-1/2 -translate-y-1/2 bg-card px-1 leading-none"
+          style={{ left: i * spacing - (i === 0 ? 0 : 4) }}
         >
-          <span className="absolute bottom-2 left-1 leading-none">{tickLabel(i * step, step)}</span>
-        </div>
+          {tickLabel(i * step, step)}
+        </span>
       ))}
     </div>
   )

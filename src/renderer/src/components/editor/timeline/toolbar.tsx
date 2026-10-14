@@ -1,28 +1,16 @@
 import {
   Delete02Icon,
-  NextIcon,
-  PauseIcon,
-  PlayIcon,
-  PreviousIcon,
   RedoIcon,
   ScissorIcon,
   SearchAddIcon,
   SearchMinusIcon,
-  UndoIcon,
-  VolumeHighIcon,
-  VolumeMute02Icon
+  UndoIcon
 } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { Slider } from '@/components/ui/slider'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import type { MasterVolume } from '@/components/editor/editor'
 import { IconButton } from '@/components/icon-button'
 import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
-import { formatClock } from '@/lib/format'
 
 interface ToolbarProps {
-  playing: boolean
-  playhead: number
   duration: number
   canUndo: boolean
   canRedo: boolean
@@ -31,10 +19,6 @@ interface ToolbarProps {
   onRedo: () => void
   onSplit: () => void
   onDelete: () => void
-  onToggle: () => void
-  onSeek: (time: number) => void
-  master: MasterVolume
-  onMasterChange: (master: MasterVolume) => void
   zoom: number
   onZoom: (zoom: number) => void
 }
@@ -42,11 +26,10 @@ interface ToolbarProps {
 const ZOOM_STEP = 0.1
 
 export function Toolbar(props: ToolbarProps) {
-  const { playing, playhead, duration, master, onMasterChange, zoom, onZoom } = props
+  const { duration, zoom, onZoom } = props
   const empty = duration === 0
-  const audible = !master.muted && master.level > 0
   return (
-    <div className="m-2 mb-1 grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center rounded-xl bg-muted px-2">
+    <div className="mx-2 mt-2 flex h-9 shrink-0 items-center justify-between rounded-lg bg-muted px-1.5">
       <div className="flex items-center gap-0.5">
         <IconButton
           icon={UndoIcon}
@@ -79,62 +62,6 @@ export function Toolbar(props: ToolbarProps) {
         />
       </div>
 
-      <div className="flex items-center gap-1">
-        <IconButton
-          icon={PreviousIcon}
-          label="Go to start"
-          shortcut={SHORTCUTS.start}
-          disabled={empty}
-          onClick={() => props.onSeek(0)}
-        />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label={playing ? 'Pause' : 'Play'}
-              disabled={empty}
-              onClick={props.onToggle}
-              className="flex size-9 items-center justify-center rounded-full bg-brand text-brand-foreground transition-[filter] outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:opacity-40"
-            >
-              <HugeiconsIcon
-                icon={playing ? PauseIcon : PlayIcon}
-                strokeWidth={2}
-                className="size-4 fill-current"
-              />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="rounded-md px-2 py-1">
-            {playing ? 'Pause' : 'Play'}
-            <kbd className="font-sans text-background/60">{SHORTCUTS.play}</kbd>
-          </TooltipContent>
-        </Tooltip>
-        <IconButton
-          icon={NextIcon}
-          label="Go to end"
-          shortcut={SHORTCUTS.end}
-          disabled={empty}
-          onClick={() => props.onSeek(duration)}
-        />
-        <div className="ml-2 w-[136px] text-xs tabular-nums">
-          <span>{formatClock(playhead)}</span>
-          <span className="text-muted-foreground"> / {formatClock(duration)}</span>
-        </div>
-        <IconButton
-          icon={audible ? VolumeHighIcon : VolumeMute02Icon}
-          label={master.muted ? 'Unmute preview' : 'Mute preview'}
-          aria-pressed={master.muted}
-          onClick={() => onMasterChange({ ...master, muted: !master.muted })}
-        />
-        <Slider
-          aria-label="Preview volume"
-          value={[master.muted ? 0 : master.level * 100]}
-          max={100}
-          step={1}
-          onValueChange={([percent]) => onMasterChange({ level: percent / 100, muted: false })}
-          className="w-16 [&_[data-slot=slider-thumb]]:size-3"
-        />
-      </div>
-
       <div className="flex items-center justify-end gap-0.5">
         <IconButton
           icon={SearchMinusIcon}
@@ -147,7 +74,7 @@ export function Toolbar(props: ToolbarProps) {
           max={100}
           step={1}
           onValueChange={([value]) => onZoom(value / 100)}
-          className="w-24 [&_[data-slot=slider-thumb]]:size-3"
+          className="w-24"
         />
         <IconButton
           icon={SearchAddIcon}

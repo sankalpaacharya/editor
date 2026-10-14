@@ -9,7 +9,7 @@ import {
 } from 'react'
 import { AudioWave01Icon, TextIcon, Video01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
-import type { Edit, MasterVolume } from '@/components/editor/editor'
+import type { Edit } from '@/components/editor/editor'
 import { Panel } from '@/components/editor/panel'
 import { AudioRow } from '@/components/editor/timeline/audio-row'
 import {
@@ -17,7 +17,7 @@ import {
   clipStarts,
   GUTTER,
   insertionIndex,
-  overlayRowHeight,
+  overlayLayout,
   ROW_GAP,
   RULER_HEIGHT,
   TAIL,
@@ -53,8 +53,6 @@ interface TimelineProps {
   onRedo: () => void
   onSplit: () => void
   onDelete: () => void
-  master: MasterVolume
-  onMasterChange: (master: MasterVolume) => void
   onDropMedia: (item: MediaItem, at: { index?: number; time?: number }) => void
 }
 
@@ -156,12 +154,8 @@ export function Timeline({
     <Panel className="h-[264px] shrink-0">
       <Toolbar
         {...toolbar}
-        playing={playback.playing}
-        playhead={playhead}
         duration={duration}
         canDelete={selection !== null}
-        onToggle={playback.toggle}
-        onSeek={seek}
         zoom={zoom}
         onZoom={zoomTo}
       />
@@ -229,7 +223,7 @@ export function Timeline({
               x={GUTTER + playhead * pps}
               height={
                 RULER_HEIGHT +
-                overlayRowHeight(overlays) +
+                overlayLayout(overlays).rowHeight +
                 VIDEO_ROW_HEIGHT +
                 AUDIO_ROW_HEIGHT +
                 ROW_GAP * 3
