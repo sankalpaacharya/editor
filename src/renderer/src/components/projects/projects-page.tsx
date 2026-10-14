@@ -2,8 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Add01Icon, Folder01Icon, Upload04Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { toast } from 'sonner'
-import { RaisedButton } from '@/components/ui/raised-button'
-import { BRAND } from '@/lib/brand'
+import { Button } from '@/components/ui/button'
 import { Rail } from '@/components/rail'
 import { ProjectCard } from '@/components/projects/project-card'
 import { useFileDrop } from '@/hooks/use-file-drop'
@@ -78,25 +77,25 @@ export function ProjectsPage({ onOpen }: { onOpen: (project: OpenProject) => voi
       <main
         {...dropProps}
         className={cn(
-          'flex min-w-0 flex-1 flex-col overflow-hidden rounded-[13px] border bg-card',
-          dropping && 'border-brand/60'
+          'flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-card',
+          dropping && 'ring-2 ring-brand/60'
         )}
       >
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
-          <h1 className="text-sm font-medium">Projects</h1>
+        <header className="flex h-14 shrink-0 items-center gap-2 px-5">
+          <h1 className="text-[15px] font-medium">Projects</h1>
           {projects && projects.length > 0 && (
             <>
               <span className="text-xs text-muted-foreground tabular-nums">{projects.length}</span>
-              <RaisedButton
+              <Button
+                variant="brand"
                 size="sm"
-                color={BRAND}
-                className="ml-auto h-8 px-3"
+                className="ml-auto h-8 px-4"
                 onClick={create}
                 disabled={busy}
               >
                 <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
                 New project
-              </RaisedButton>
+              </Button>
             </>
           )}
         </header>
@@ -111,18 +110,12 @@ export function ProjectsPage({ onOpen }: { onOpen: (project: OpenProject) => voi
               <p className="text-xs font-medium">No projects yet</p>
               <p className="text-xs text-muted-foreground">Drop videos here to start one.</p>
             </div>
-            <RaisedButton
-              size="sm"
-              color={BRAND}
-              className="h-8 px-3"
-              onClick={create}
-              disabled={busy}
-            >
+            <Button variant="brand" size="sm" className="h-8 px-4" onClick={create} disabled={busy}>
               New project
-            </RaisedButton>
+            </Button>
           </div>
         ) : (
-          <div className="grid min-h-0 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] content-start gap-3 overflow-y-auto p-4">
+          <div className="grid min-h-0 grid-cols-[repeat(auto-fill,minmax(240px,1fr))] content-start gap-4 overflow-y-auto px-5 pb-5">
             {projects?.map((project) => (
               <ProjectCard
                 key={project.id}

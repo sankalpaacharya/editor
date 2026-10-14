@@ -23,13 +23,13 @@ interface ProjectCardProps {
 export function ProjectCard({ project, onOpen, onRename, onDelete }: ProjectCardProps) {
   const [dialog, setDialog] = useState<'rename' | 'delete' | null>(null)
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-lg border bg-background/40 transition-colors hover:border-foreground/20">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-muted p-1.5 transition-colors hover:bg-accent">
       <button
         type="button"
         onClick={onOpen}
         className="flex flex-col text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <div className="relative aspect-video w-full">
+        <div className="relative aspect-video w-full overflow-hidden rounded-xl">
           <Thumbnail
             mediaId={project.coverMediaId}
             className="size-full transition-[filter] group-hover:brightness-110"

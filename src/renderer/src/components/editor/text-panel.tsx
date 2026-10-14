@@ -25,7 +25,7 @@ export function TextPanel({
             type="button"
             disabled={disabled}
             onClick={() => onAdd(preset)}
-            className="group flex h-16 items-center gap-3 rounded-lg border bg-background/40 px-3 text-left transition-colors hover:border-foreground/20 disabled:pointer-events-none disabled:opacity-40"
+            className="group flex h-16 items-center gap-3 rounded-xl bg-muted px-3 text-left transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
           >
             <span className={`min-w-0 flex-1 truncate ${SAMPLE_SIZES[preset.name]}`}>
               {preset.sample}

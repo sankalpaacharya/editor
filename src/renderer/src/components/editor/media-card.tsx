@@ -34,7 +34,7 @@ export function MediaCard({ item, used, missing, onAdd, onRemove }: MediaCardPro
     >
       <div
         className={cn(
-          'relative aspect-video overflow-hidden rounded-md ring-1 ring-border transition-shadow group-hover:ring-foreground/25',
+          'relative aspect-video overflow-hidden rounded-xl transition-shadow group-hover:ring-2 group-hover:ring-foreground/20',
           missing && 'opacity-45'
         )}
       >

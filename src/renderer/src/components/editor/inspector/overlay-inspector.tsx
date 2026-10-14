@@ -30,7 +30,7 @@ export function TextInspector({ overlay, duration, onChange }: OverlayInspectorP
             setDraft(null)
             typing.end()
           }}
-          className="min-h-16 rounded-md border-border bg-background/50 px-2 py-1.5 text-xs md:text-xs"
+          className="min-h-20 rounded-xl border-0 bg-muted px-3 py-2 text-xs shadow-none md:text-xs focus-visible:ring-2 focus-visible:ring-ring/40"
         />
         <Field label="Size">
           {(id) => (

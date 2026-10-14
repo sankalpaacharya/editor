@@ -81,7 +81,7 @@ export function Preview({
   }
 
   return (
-    <Panel className="min-w-0 flex-1">
+    <Panel className="min-w-0 flex-1 bg-transparent">
       <div
         ref={areaRef}
         onPointerDown={() => onSelect(null)}
@@ -99,7 +99,7 @@ export function Preview({
         <div
           ref={frameRef}
           className={cn(
-            'relative overflow-hidden bg-black ring-1 ring-white/5',
+            'relative overflow-hidden rounded-2xl bg-black',
             dropping && 'ring-2 ring-brand/70'
           )}
           style={frame}

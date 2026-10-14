@@ -47,7 +47,7 @@ export function ClipInspector({ clip, media, edit }: ClipInspectorProps) {
         )}
       </Section>
       <Section title="Speed">
-        <div className="grid grid-cols-6 gap-px overflow-hidden rounded-md border bg-border">
+        <div className="grid grid-cols-3 gap-1.5">
           {SPEEDS.map((speed) => (
             <button
               key={speed}
@@ -55,10 +55,10 @@ export function ClipInspector({ clip, media, edit }: ClipInspectorProps) {
               aria-pressed={speed === clip.speed}
               onClick={() => edit({ type: 'setSpeed', clipId: clip.id, speed })}
               className={cn(
-                'h-7 bg-card text-[11px] tabular-nums transition-colors',
+                'h-9 rounded-xl text-xs tabular-nums transition-colors',
                 speed === clip.speed
-                  ? 'bg-secondary font-medium text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-secondary font-medium text-foreground ring-1 ring-brand/50'
+                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
             >
               {speed}x

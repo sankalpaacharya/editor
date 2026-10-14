@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils'
 
 export function Section({ title, children }: { title?: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-2 border-b px-3 py-3 last:border-b-0">
-      {title && <h3 className="text-[11px] font-medium text-muted-foreground">{title}</h3>}
+    <div className="flex flex-col gap-2.5 px-4 py-3">
+      {title && <h3 className="text-[13px] font-medium">{title}</h3>}
       {children}
     </div>
   )
@@ -68,10 +68,10 @@ export function NumberField({
         onKeyDown={(event) => {
           if (event.key === 'Enter') event.currentTarget.blur()
         }}
-        className="h-7 rounded-md border-border bg-background/50 px-2 text-xs tabular-nums md:text-xs [&::-webkit-inner-spin-button]:appearance-none"
+        className="h-9 rounded-xl border-0 bg-muted px-3 text-xs tabular-nums shadow-none md:text-xs focus-visible:ring-2 focus-visible:ring-ring/40 [&::-webkit-inner-spin-button]:appearance-none"
       />
       {suffix && (
-        <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-[11px] text-muted-foreground">
+        <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[11px] text-muted-foreground">
           {suffix}
         </span>
       )}

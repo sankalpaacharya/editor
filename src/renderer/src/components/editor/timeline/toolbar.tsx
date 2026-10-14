@@ -46,7 +46,7 @@ export function Toolbar(props: ToolbarProps) {
   const empty = duration === 0
   const audible = !master.muted && master.level > 0
   return (
-    <div className="grid h-11 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b px-2">
+    <div className="m-2 mb-1 grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center rounded-xl bg-muted px-2">
       <div className="flex items-center gap-0.5">
         <IconButton
           icon={UndoIcon}
@@ -94,7 +94,7 @@ export function Toolbar(props: ToolbarProps) {
               aria-label={playing ? 'Pause' : 'Play'}
               disabled={empty}
               onClick={props.onToggle}
-              className="flex size-8 items-center justify-center rounded-full bg-brand text-brand-foreground transition-[filter] outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:opacity-40"
+              className="flex size-9 items-center justify-center rounded-full bg-brand text-brand-foreground transition-[filter] outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:opacity-40"
             >
               <HugeiconsIcon
                 icon={playing ? PauseIcon : PlayIcon}
