@@ -16,7 +16,6 @@ function filmstripFrames(duration: number): number {
   return Math.min(Math.max(frames, 1), MAX_FILMSTRIP_FRAMES)
 }
 
-/** ffmpeg arguments between the binary and the output path, or null when the media has no such image. */
 const derivations: Record<string, (path: string, media: MediaItem) => string[] | null> = {
   'thumbnail.jpg': (path, media) =>
     media.kind === 'video'
@@ -58,7 +57,6 @@ const pending = new Map<string, Promise<string>>()
 async function generate(args: string[], target: string): Promise<string> {
   if (existsSync(target)) return target
   await mkdir(cacheDir(), { recursive: true })
-  // Written aside and renamed so an interrupted ffmpeg never leaves a truncated file in the cache.
   const partial = `${target}.partial${extname(target)}`
   try {
     await run(FFMPEG_PATH, [

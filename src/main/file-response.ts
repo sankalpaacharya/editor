@@ -31,7 +31,6 @@ function parseRange(header: string, size: number): ByteRange | 'unsatisfiable' {
 const body = (path: string, range?: ByteRange): ReadableStream =>
   Readable.toWeb(createReadStream(path, range)) as ReadableStream
 
-/** Serves a file, answering a Range request with 206 so media elements can seek. */
 export async function fileResponse(path: string, rangeHeader: string | null): Promise<Response> {
   const { size } = await stat(path)
   const headers = new Headers({

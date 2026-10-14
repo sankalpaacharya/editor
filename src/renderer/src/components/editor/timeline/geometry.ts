@@ -7,7 +7,6 @@ import {
 } from '../../../../../shared/sequence'
 
 export const GUTTER = 40
-/** Empty space after the last clip, so there is room to drop media at the end. */
 export const TAIL = 160
 export const RULER_HEIGHT = 26
 export const OVERLAY_LANE_HEIGHT = 22
@@ -20,7 +19,6 @@ export interface ClipDrag {
   dx: number
 }
 
-/** Places a whole-source image (filmstrip or waveform) so the clip shows its own part. */
 export function sourceSpan(clip: Clip, media: MediaItem | undefined, pps: number): CSSProperties {
   const mediaDuration = media?.kind === 'video' ? media.duration : clip.out
   return { left: (-clip.in * pps) / clip.speed, width: (mediaDuration * pps) / clip.speed }
@@ -36,7 +34,6 @@ export function clipStarts(clips: readonly Clip[]): number[] {
   return starts
 }
 
-/** The index a clip centered at `time` would take among `clips`, ignoring `skip`. */
 export function insertionIndex(clips: readonly Clip[], time: number, skip = -1): number {
   const starts = clipStarts(clips)
   return clips.filter(
@@ -49,7 +46,6 @@ export function overlayRowHeight(overlays: readonly Overlay[]): number {
   return lanes * OVERLAY_LANE_HEIGHT + 6
 }
 
-/** Assigns each overlay the first lane where it doesn't overlap an earlier one. */
 export function overlayLanes(overlays: readonly Overlay[]): Map<string, number> {
   const laneEnds: number[] = []
   const lanes = new Map<string, number>()

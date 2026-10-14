@@ -22,7 +22,6 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener)
 }
 
-/** Whether an image URL loads. Results are shared, so each URL is requested once. */
 export function useImageStatus(url: string | null): Status {
   return useSyncExternalStore(subscribe, () => {
     if (url === null) return 'failed'

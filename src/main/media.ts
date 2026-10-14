@@ -68,7 +68,6 @@ async function probe(path: string): Promise<MediaItem> {
   }
 }
 
-/** Probes and stores each file. Files that can't be probed are skipped, not stored. */
 export async function importMedia(
   projectId: ProjectId,
   paths: string[]

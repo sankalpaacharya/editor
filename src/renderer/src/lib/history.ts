@@ -11,7 +11,6 @@ export interface History {
   past: Sequence[]
   present: Sequence
   future: Sequence[]
-  /** The coalesce key of the edit that produced `present`, if any. */
   coalesce: string | null
 }
 
@@ -25,10 +24,6 @@ export function initialHistory(sequence: Sequence): History {
   return { past: [], present: sequence, future: [], coalesce: null }
 }
 
-/**
- * Consecutive edits with the same coalesce key replace `present` instead of pushing a new
- * undo step, so a whole drag undoes at once.
- */
 export function historyReducer(state: History, action: HistoryAction): History {
   switch (action.type) {
     case 'edit': {
@@ -56,7 +51,6 @@ export function historyReducer(state: History, action: HistoryAction): History {
       return { past: [...state.past, state.present], present: next, future, coalesce: null }
     }
     case 'forgetMedia': {
-      // Media removed from the project is gone for good, so no undo state may bring it back.
       const forget = (sequence: Sequence) =>
         editSequence(sequence, { type: 'removeMedia', mediaId: action.mediaId })
       return {

@@ -41,7 +41,6 @@ export const clipSchema = z.object({
   in: seconds,
   out: seconds,
   speed: z.number().finite().min(MIN_SPEED).max(MAX_SPEED),
-  /** Linear gain from 0 (muted) to 1 (as recorded). */
   volume: unit.default(1)
 })
 export type Clip = z.infer<typeof clipSchema>
@@ -86,11 +85,6 @@ export const sequenceSchema = z.object({
   clips: z.array(clipSchema),
   overlays: z.array(overlaySchema)
 })
-/**
- * The edit of one project. Clips are ranges of video media in source seconds, played in
- * order. Overlays sit on the timeline in timeline seconds, centered at `x`/`y` as a fraction
- * of the output frame. Every source is fitted into `format` on export and in the preview.
- */
 export type Sequence = z.infer<typeof sequenceSchema>
 
 export const DEFAULT_FORMAT: Format = { width: 1920, height: 1080, fps: 30 }
@@ -114,7 +108,6 @@ export interface TimelinePosition {
   sourceTime: number
 }
 
-/** Maps a timeline time to the clip under it. Returns null for an empty sequence. */
 export function locate(clips: readonly Clip[], time: number): TimelinePosition | null {
   let clipStart = 0
   for (let index = 0; index < clips.length; index++) {

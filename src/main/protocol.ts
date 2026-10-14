@@ -35,8 +35,6 @@ async function serve(request: Request): Promise<Response> {
   return image ? fileResponse(await image, range) : notFound()
 }
 
-// The renderer's origin (file:// or the dev server) differs from media://, so fetch()
-// and canvas reads need an explicit grant. The id in the URL is the access check.
 function allowAnyOrigin(response: Response): Response {
   const headers = new Headers(response.headers)
   headers.set('Access-Control-Allow-Origin', '*')

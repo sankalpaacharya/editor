@@ -97,7 +97,6 @@ export function Timeline({
     if (!scroller) return
     const visible = scroller.clientWidth - GUTTER
     const offset = playhead * pps - scroller.scrollLeft
-    // Zoom around the playhead: keep it where it is on screen, or center it if it was hidden.
     const keep = offset >= 0 && offset <= visible ? offset : visible / 2
     const nextPps = Math.max(fit, 1) * MAX_ZOOM_FACTOR ** next
     requestAnimationFrame(() => {

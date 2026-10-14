@@ -11,7 +11,6 @@ function timing(time: number, duration: number) {
 export interface TextPreset {
   name: string
   sample: string
-  /** Font size as a fraction of the frame height. */
   size: number
   y: number
 }

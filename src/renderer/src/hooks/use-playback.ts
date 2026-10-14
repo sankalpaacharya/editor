@@ -8,14 +8,8 @@ import {
 } from '../../../shared/sequence'
 
 const SEAMLESS_GAP_SECONDS = 0.05
-// While playing, the rendered playhead trails the video by about a frame. A re-render
-// within this distance must not seek, or every edit during playback would stutter.
 const PLAYING_SEEK_TOLERANCE_SECONDS = 0.25
 
-/**
- * Plays a sequence whose clips come from several videos. Each video media item has its own
- * `<video>`, registered with `registerVideo`. Only the one under the playhead is shown.
- */
 export function usePlayback(clips: readonly Clip[], masterVolume: number) {
   const videos = useRef(new Map<MediaId, HTMLVideoElement>())
   const clipsRef = useRef(clips)

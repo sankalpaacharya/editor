@@ -6,7 +6,6 @@ import { errorMessage } from '@/lib/format'
 
 const DELAY_MS = 500
 
-/** Saves `sequence` shortly after it changes. The returned flush saves any pending change now. */
 export function useAutosave(projectId: ProjectId, sequence: Sequence): () => Promise<void> {
   const saved = useRef(sequence)
   const pending = useRef<Sequence | null>(null)
