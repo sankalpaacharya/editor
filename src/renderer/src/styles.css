@@ -89,9 +89,9 @@
   --destructive: #ff6568;
   --border: #ffffff10;
   --input: #ffffff14;
-  --ring: #00bbff80;
-  --brand: #00bbff;
-  --brand-foreground: #04131a;
+  --ring: #4f8cff80;
+  --brand: #4f8cff;
+  --brand-foreground: #ffffff;
   --track-text: #5847a6;
   --track-image: #8a6a2c;
   --track-audio: #245a7e;
@@ -103,12 +103,12 @@
   --radius: 0.375rem;
   --sidebar: #0b0b0c;
   --sidebar-foreground: #fafafa;
-  --sidebar-primary: #00bbff;
-  --sidebar-primary-foreground: #04131a;
+  --sidebar-primary: #4f8cff;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #262626;
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #ffffff0d;
-  --sidebar-ring: #00bbff80;
+  --sidebar-ring: #4f8cff80;
   --selection: #e2d12b;
   --meter-ok: oklch(0.696 0.17 162.48);
   --meter-warn: oklch(0.795 0.184 86.047);
