@@ -82,6 +82,7 @@ interface TimelineProps {
   onDuplicate: () => void
   onRedo: () => void
   onDelete: () => void
+  onPressAudio: () => void
   onDropMedia: (item: MediaItem, at: { index?: number; time?: number }) => void
 }
 
@@ -96,6 +97,7 @@ export function Timeline({
   onSelect,
   edit,
   onDropMedia,
+  onPressAudio,
   ...toolbar
 }: TimelineProps) {
   const { playhead, duration, seek } = playback
@@ -333,6 +335,7 @@ export function Timeline({
                 drag={drag}
                 onSelect={onSelect}
                 onSeek={seekAt}
+                onPressAudio={onPressAudio}
               />
             </Row>
             {dropX !== null && (

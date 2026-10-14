@@ -2,7 +2,6 @@ import { Delete02Icon } from '@hugeicons/core-free-icons'
 import { IconButton } from '@/components/ui/icon-button'
 import type { Edit } from '@/components/editor/editor'
 import { Panel } from '@/components/ui/panel'
-import { useState } from 'react'
 import { ClipInspector, ClipTabs, type ClipTab } from '@/components/editor/inspector/clip-inspector'
 import { ImageInspector, TextInspector } from '@/components/editor/inspector/overlay-inspector'
 import { ExportHistory } from '@/components/editor/inspector/export-history'
@@ -18,6 +17,8 @@ interface InspectorProps {
   selection: Selection
   exportsRevision: number
   edit: Edit
+  clipTab: ClipTab
+  onClipTab: (tab: ClipTab) => void
   onDelete: () => void
 }
 
@@ -28,6 +29,8 @@ export function Inspector({
   selection,
   exportsRevision,
   edit,
+  clipTab,
+  onClipTab,
   onDelete
 }: InspectorProps) {
   const only = onlySelected(selection)
@@ -37,9 +40,8 @@ export function Inspector({
   const updateOverlay = (next: Overlay, coalesce?: string) =>
     edit({ type: 'updateOverlay', overlay: next }, coalesce)
 
-  const [clipTab, setClipTab] = useState<ClipTab>('speed')
   const title = clip ? (
-    <ClipTabs tab={clipTab} onTab={setClipTab} />
+    <ClipTabs tab={clipTab} onTab={onClipTab} />
   ) : overlay?.kind === 'text' ? (
     'Text'
   ) : overlay ? (

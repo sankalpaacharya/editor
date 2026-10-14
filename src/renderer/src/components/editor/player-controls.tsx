@@ -1,4 +1,11 @@
-import { FullScreenIcon, PauseIcon, PlayIcon } from '@hugeicons/core-free-icons'
+import {
+  FullScreenIcon,
+  PauseIcon,
+  PlayIcon,
+  VolumeHighIcon,
+  VolumeMute02Icon
+} from '@hugeicons/core-free-icons'
+import { Slider } from '@/components/ui/slider'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { IconButton } from '@/components/ui/icon-button'
@@ -23,12 +30,19 @@ function ratioLabel({ width, height }: Format): string {
   return known ? `${known[0]}:${known[1]}` : `${width}×${height}`
 }
 
+export interface PreviewVolume {
+  level: number
+  muted: boolean
+}
+
 interface PlayerControlsProps {
   playing: boolean
   playhead: number
   duration: number
   format: Format
   onToggle: () => void
+  volume: PreviewVolume
+  onVolume: (volume: PreviewVolume) => void
 }
 
 export function PlayerControls({
@@ -36,7 +50,9 @@ export function PlayerControls({
   playhead,
   duration,
   format,
-  onToggle
+  onToggle,
+  volume,
+  onVolume
 }: PlayerControlsProps) {
   return (
     <div className="grid h-11 shrink-0 grid-cols-[1fr_auto_1fr] items-center px-3">
@@ -68,6 +84,20 @@ export function PlayerControls({
       </Tooltip>
 
       <div className="flex items-center justify-self-end gap-1">
+        <IconButton
+          icon={volume.muted || volume.level === 0 ? VolumeMute02Icon : VolumeHighIcon}
+          label={volume.muted ? 'Unmute preview' : 'Mute preview'}
+          aria-pressed={volume.muted}
+          onClick={() => onVolume({ ...volume, muted: !volume.muted })}
+        />
+        <Slider
+          aria-label="Preview volume"
+          value={[volume.muted ? 0 : volume.level * 100]}
+          max={100}
+          step={1}
+          onValueChange={([percent]) => onVolume({ level: percent / 100, muted: false })}
+          className="mr-2 w-20"
+        />
         <Badge variant="outline">{ratioLabel(format)}</Badge>
         <IconButton
           icon={FullScreenIcon}

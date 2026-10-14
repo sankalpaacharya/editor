@@ -24,6 +24,7 @@ interface AudioRowProps {
   selection: Selection
   drag: ClipDrag | null
   onSelect: Select
+  onPressAudio: () => void
   onSeek: (clientX: number) => void
 }
 
@@ -35,6 +36,7 @@ export function AudioRow({
   selection,
   drag,
   onSelect,
+  onPressAudio,
   onSeek
 }: AudioRowProps) {
   return (
@@ -49,6 +51,7 @@ export function AudioRow({
             onPointerDown={(event: PointerEvent<HTMLDivElement>) => {
               event.stopPropagation()
               onSelect({ kind: 'clip', id: clip.id }, isAdditive(event))
+              onPressAudio()
               onSeek(event.clientX)
               trackPointer(event, (move) => onSeek(move.clientX))
             }}

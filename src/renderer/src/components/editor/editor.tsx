@@ -5,6 +5,8 @@ import { RailButton } from '@/components/rail'
 import { EditorHeader } from '@/components/editor/header'
 import { ExportDialog } from '@/components/editor/export-dialog'
 import { Inspector } from '@/components/editor/inspector/inspector'
+import type { ClipTab } from '@/components/editor/inspector/clip-inspector'
+import type { PreviewVolume } from '@/components/editor/player-controls'
 import { MediaPanel } from '@/components/editor/media-panel'
 import { TextPanel } from '@/components/editor/text-panel'
 import { Preview } from '@/components/editor/preview'
@@ -42,7 +44,10 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
   const select: Select = (item, additive) =>
     setSelection((current) => nextSelection(current, item, additive))
   const [panel, setPanel] = useState<'media' | 'text'>('media')
-  const playback = usePlayback(sequence.clips, sequence.tracks.audio.enabled ? 1 : 0)
+  const [clipTab, setClipTab] = useState<ClipTab>('speed')
+  const [volume, setVolume] = useState<PreviewVolume>({ level: 1, muted: false })
+  const audible = sequence.tracks.audio.enabled && !volume.muted
+  const playback = usePlayback(sequence.clips, audible ? volume.level : 0)
   const { playhead, duration, seek } = playback
   const flush = useAutosave(project.id, sequence)
   const exporter = useExport(project.id)
@@ -252,6 +257,8 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
             duration={duration}
             format={sequence.format}
             onToggle={playback.toggle}
+            volume={volume}
+            onVolume={setVolume}
           />
         </Preview>
         <Inspector
@@ -261,6 +268,8 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
           selection={selection}
           exportsRevision={exporter.finished}
           edit={edit}
+          clipTab={clipTab}
+          onClipTab={setClipTab}
           onDelete={deleteSelection}
         />
       </div>
@@ -281,6 +290,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
         onUndo={undo}
         onRedo={redo}
         onDelete={deleteSelection}
+        onPressAudio={() => setClipTab('sound')}
         onDropMedia={addMedia}
       />
       <ExportDialog state={exporter.state} onCancel={exporter.cancel} />
