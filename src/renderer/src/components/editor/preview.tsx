@@ -17,7 +17,7 @@ import { trackPointer } from '@/lib/pointer'
 import { isAdditive, isSelected, type Select, type Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
 
-const MARGIN = 12
+const MARGIN = 8
 
 interface PreviewProps {
   sequence: Sequence
@@ -91,10 +91,11 @@ export function Preview({
   }
 
   return (
-    <Panel className="min-w-0 flex-1 flex-row">
-      <div className="flex min-w-0 flex-1 flex-col border-l">
+    <Panel title="Player" className="min-w-0 flex-1">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div
           ref={areaRef}
+          data-player-stage
           onPointerDown={() => onSelect(null)}
           onDragOver={(event) => {
             if (!isMediaDrag(event)) return

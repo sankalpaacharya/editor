@@ -1,97 +1,86 @@
-import {
-  Backward01Icon,
-  Forward01Icon,
-  NextIcon,
-  PauseIcon,
-  PlayIcon,
-  PreviousIcon
-} from '@hugeicons/core-free-icons'
+import { FullScreenIcon, PauseIcon, PlayIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { IconButton } from '@/components/icon-button'
 import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
+import type { Format } from '../../../../shared/sequence'
 import { formatClock } from '@/lib/format'
 
-const NUDGE_SECONDS = 5
+const RATIOS = [
+  [16, 9],
+  [9, 16],
+  [1, 1],
+  [4, 3],
+  [3, 4],
+  [4, 5],
+  [21, 9]
+]
+
+function ratioLabel({ width, height }: Format): string {
+  const ratio = width / height
+  const known = RATIOS.find(([w, h]) => Math.abs(w / h - ratio) < 0.02)
+  return known ? `${known[0]}:${known[1]}` : `${width}×${height}`
+}
 
 interface PlayerControlsProps {
   playing: boolean
   playhead: number
   duration: number
-  fps: number
+  format: Format
   onToggle: () => void
-  onSeek: (time: number) => void
 }
 
 export function PlayerControls({
   playing,
   playhead,
   duration,
-  fps,
-  onToggle,
-  onSeek
+  format,
+  onToggle
 }: PlayerControlsProps) {
-  const empty = duration === 0
   return (
-    <div className="grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-t px-3">
-      <span className="text-xs text-muted-foreground tabular-nums">
-        {Math.round(playhead * fps)}/{Math.round(duration * fps)}
-      </span>
-
-      <div className="flex items-center gap-1">
-        <IconButton
-          icon={Backward01Icon}
-          label="Back 5 seconds"
-          disabled={empty}
-          onClick={() => onSeek(Math.max(playhead - NUDGE_SECONDS, 0))}
-        />
-        <IconButton
-          icon={PreviousIcon}
-          label="Go to start"
-          shortcut={SHORTCUTS.start}
-          disabled={empty}
-          onClick={() => onSeek(0)}
-        />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label={playing ? 'Pause' : 'Play'}
-              disabled={empty}
-              onClick={onToggle}
-              className="flex size-9 items-center justify-center rounded-full text-foreground transition-[background-color,transform] outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring active:scale-95 disabled:opacity-40"
-            >
-              <HugeiconsIcon
-                icon={playing ? PauseIcon : PlayIcon}
-                strokeWidth={2}
-                className="size-5 fill-current"
-              />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="rounded-md px-2 py-1">
-            {playing ? 'Pause' : 'Play'}
-            <kbd className="font-sans text-background/60">{SHORTCUTS.play}</kbd>
-          </TooltipContent>
-        </Tooltip>
-        <IconButton
-          icon={NextIcon}
-          label="Go to end"
-          shortcut={SHORTCUTS.end}
-          disabled={empty}
-          onClick={() => onSeek(duration)}
-        />
-        <IconButton
-          icon={Forward01Icon}
-          label="Forward 5 seconds"
-          disabled={empty}
-          onClick={() => onSeek(Math.min(playhead + NUDGE_SECONDS, duration))}
-        />
-      </div>
-
-      <span className="justify-self-end text-xs tabular-nums">
-        {formatClock(playhead)}
+    <div className="grid h-11 shrink-0 grid-cols-[1fr_auto_1fr] items-center px-3">
+      <span className="text-xs tabular-nums">
+        <span className="text-brand">{formatClock(playhead)}</span>
         <span className="text-muted-foreground"> / {formatClock(duration)}</span>
       </span>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            aria-label={playing ? 'Pause' : 'Play'}
+            disabled={duration === 0}
+            onClick={onToggle}
+            className="flex size-9 items-center justify-center rounded-full text-foreground transition-[background-color,transform] outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring active:scale-95 disabled:opacity-40"
+          >
+            <HugeiconsIcon
+              icon={playing ? PauseIcon : PlayIcon}
+              strokeWidth={2}
+              className="size-5 fill-current"
+            />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="rounded-md px-2 py-1">
+          {playing ? 'Pause' : 'Play'}
+          <kbd className="font-sans text-background/60">{SHORTCUTS.play}</kbd>
+        </TooltipContent>
+      </Tooltip>
+
+      <div className="flex items-center justify-self-end gap-1">
+        <span className="rounded-[3px] border border-muted-foreground/40 px-1 text-[10px] leading-4 text-muted-foreground tabular-nums">
+          {ratioLabel(format)}
+        </span>
+        <IconButton
+          icon={FullScreenIcon}
+          label="Full screen"
+          onClick={(event) =>
+            void event.currentTarget
+              .closest('section')
+              ?.querySelector<HTMLElement>('[data-player-stage]')
+              ?.requestFullscreen()
+          }
+        />
+      </div>
     </div>
   )
 }

@@ -256,9 +256,8 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
               playing={playback.playing}
               playhead={playhead}
               duration={duration}
+              format={sequence.format}
               onToggle={playback.toggle}
-              onSeek={playback.seek}
-              fps={sequence.format.fps}
             />
           </Preview>
           <Inspector
