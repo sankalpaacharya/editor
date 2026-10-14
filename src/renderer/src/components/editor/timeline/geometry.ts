@@ -27,6 +27,33 @@ export function sourceSpan(clip: Clip, media: MediaItem | undefined, pps: number
   return { left: (-clip.in * pps) / clip.speed, width: (mediaDuration * pps) / clip.speed }
 }
 
+const SNAP_PIXELS = 10
+
+export function snapEdges(clips: readonly Clip[], skip: number, playhead: number): number[] {
+  const starts = clipStarts(clips)
+  const edges = clips.flatMap((clip, index) =>
+    index === skip ? [] : [starts[index], starts[index] + timelineLength(clip)]
+  )
+  return [0, playhead, ...edges]
+}
+
+// Pulls each candidate edge to the nearest target within the snap distance and returns the shift
+// to apply, so a dragged clip can stick by either end.
+export function snapShift(
+  candidates: readonly number[],
+  targets: readonly number[],
+  pps: number
+): { shift: number; at: number | null } {
+  let best = { shift: 0, at: null as number | null, distance: SNAP_PIXELS / pps }
+  for (const candidate of candidates) {
+    for (const target of targets) {
+      const distance = Math.abs(target - candidate)
+      if (distance < best.distance) best = { shift: target - candidate, at: target, distance }
+    }
+  }
+  return { shift: best.shift, at: best.at }
+}
+
 export function insertionIndex(clips: readonly Clip[], time: number, skip = -1): number {
   const starts = clipStarts(clips)
   return clips.filter(

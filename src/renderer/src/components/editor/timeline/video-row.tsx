@@ -5,6 +5,8 @@ import type { Edit } from '@/components/editor/editor'
 import {
   clipBox,
   insertionIndex,
+  snapEdges,
+  snapShift,
   VIDEO_ROW_HEIGHT,
   type ClipDrag
 } from '@/components/editor/timeline/geometry'
@@ -22,7 +24,6 @@ import type { Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
 
 const DRAG_THRESHOLD = 3
-const SNAP_PIXELS = 10
 
 interface VideoRowProps {
   clips: readonly Clip[]
@@ -34,6 +35,8 @@ interface VideoRowProps {
   onDrag: (drag: ClipDrag | null) => void
   onSelect: (selection: Selection) => void
   onSeek: (clientX: number) => void
+  playhead: number
+  onSnapGuide: (time: number | null) => void
   edit: Edit
 }
 
@@ -47,27 +50,35 @@ export function VideoRow({
   onDrag,
   onSelect,
   onSeek,
+  playhead,
+  onSnapGuide,
   edit
 }: VideoRowProps) {
   function pressClip(event: PointerEvent<HTMLDivElement>, clip: Clip, index: number) {
     event.stopPropagation()
     onSelect({ kind: 'clip', id: clip.id })
+    const length = timelineLength(clip)
+    const targets = snapEdges(clips, index, playhead)
     let dragging = false
+    let start = starts[index]
     trackPointer(
       event,
       (_move, dx) => {
         dragging ||= Math.abs(dx) > DRAG_THRESHOLD
-        if (dragging) onDrag({ clipId: clip.id, dx })
+        if (!dragging) return
+        const raw = starts[index] + dx / pps
+        const snap = snapShift([raw, raw + length], targets, pps)
+        start = Math.max(raw + snap.shift, 0)
+        onSnapGuide(snap.at)
+        onDrag({ clipId: clip.id, dx: (start - starts[index]) * pps })
       },
-      (end, dx) => {
+      (end) => {
         onDrag(null)
+        onSnapGuide(null)
         if (!dragging) return onSeek(end.clientX)
-        const start = starts[index] + dx / pps
-        const toIndex = insertionIndex(clips, start + timelineLength(clip) / 2, index)
+        const toIndex = insertionIndex(clips, start + length / 2, index)
         if (toIndex !== index) return edit({ type: 'moveClip', clipId: clip.id, toIndex })
-        const previousEnd = starts[index] - clip.gap
-        const snapped = Math.abs(start - previousEnd) * pps < SNAP_PIXELS ? previousEnd : start
-        edit({ type: 'placeClip', clipId: clip.id, start: snapped })
+        edit({ type: 'placeClip', clipId: clip.id, start })
       }
     )
   }
@@ -77,19 +88,28 @@ export function VideoRow({
     const media = mediaById.get(clip.mediaId)
     const mediaDuration = media?.kind === 'video' ? media.duration : clip.out
     const coalesce = crypto.randomUUID()
-    trackPointer(event, (_move, dx) => {
-      const delta = (dx / pps) * clip.speed
-      edit(
-        {
-          type: 'trim',
-          clipId: clip.id,
-          in: edge === 'in' ? clip.in + delta : clip.in,
-          out: edge === 'out' ? clip.out + delta : clip.out,
-          mediaDuration
-        },
-        coalesce
-      )
-    })
+    const index = clips.indexOf(clip)
+    const targets = snapEdges(clips, index, playhead)
+    const edgeTime = starts[index] + (edge === 'in' ? 0 : timelineLength(clip))
+    trackPointer(
+      event,
+      (_move, dx) => {
+        const snap = snapShift([edgeTime + dx / pps], targets, pps)
+        onSnapGuide(snap.at)
+        const delta = (dx / pps + snap.shift) * clip.speed
+        edit(
+          {
+            type: 'trim',
+            clipId: clip.id,
+            in: edge === 'in' ? clip.in + delta : clip.in,
+            out: edge === 'out' ? clip.out + delta : clip.out,
+            mediaDuration
+          },
+          coalesce
+        )
+      },
+      () => onSnapGuide(null)
+    )
   }
 
   return (

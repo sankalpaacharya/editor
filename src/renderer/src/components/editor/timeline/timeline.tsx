@@ -81,6 +81,7 @@ export function Timeline({
   const [zoom, setZoom] = useState(0)
   const [drag, setDrag] = useState<ClipDrag | null>(null)
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
+  const [snapGuide, setSnapGuide] = useState<number | null>(null)
   const { clips, overlays } = sequence
   const scrollerRef = useCallback(
     (element: HTMLDivElement | null) => {
@@ -243,6 +244,8 @@ export function Timeline({
               onDrag={setDrag}
               onSelect={onSelect}
               onSeek={seekAt}
+              playhead={playhead}
+              onSnapGuide={setSnapGuide}
               edit={edit}
             />
           </Row>
@@ -262,6 +265,12 @@ export function Timeline({
             <div
               className="pointer-events-none absolute bottom-2 z-10 w-0.5 -translate-x-1/2 rounded-full bg-brand/80"
               style={{ left: GUTTER + dropX, top: RULER_HEIGHT }}
+            />
+          )}
+          {snapGuide !== null && (
+            <div
+              className="pointer-events-none absolute bottom-2 z-20 w-px -translate-x-1/2 bg-selection"
+              style={{ left: GUTTER + snapGuide * pps, top: RULER_HEIGHT }}
             />
           )}
           {duration > 0 && (
