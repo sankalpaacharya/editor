@@ -13,7 +13,7 @@ export function ColorField({ label = 'Color', value, onChange }: ColorFieldProps
   const [open, setOpen] = useState(false)
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-[52px_1fr] items-center gap-2">
+      <div className="grid grid-cols-[64px_1fr] items-center gap-2">
         <span className="text-xs text-muted-foreground">{label}</span>
         <button
           type="button"

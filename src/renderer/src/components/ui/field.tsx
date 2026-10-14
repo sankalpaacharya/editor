@@ -1,23 +1,50 @@
 import { useId, useState, type ReactNode } from 'react'
+import { RotateLeft01Icon } from '@hugeicons/core-free-icons'
+import { IconButton } from '@/components/ui/icon-button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { useCoalesceKey } from '@/hooks/use-coalesce-key'
+import { clamp } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-export function Section({ title, children }: { title?: string; children: ReactNode }) {
+interface SectionProps {
+  title?: string
+  action?: ReactNode
+  children: ReactNode
+}
+
+export function Section({ title, action, children }: SectionProps) {
   return (
-    <div className="flex flex-col gap-2.5 px-4 py-3">
-      {title && <h3 className="text-sm font-medium">{title}</h3>}
+    <section className="flex flex-col gap-3 border-b px-4 py-4 last:border-b-0">
+      {(title || action) && (
+        <header className="-my-1 flex h-6 items-center justify-between">
+          {title && <h3 className="text-sm font-medium">{title}</h3>}
+          {action}
+        </header>
+      )}
       {children}
-    </div>
+    </section>
+  )
+}
+
+export function ResetButton({ disabled, onClick }: { disabled: boolean; onClick: () => void }) {
+  return (
+    <IconButton
+      icon={RotateLeft01Icon}
+      label="Reset"
+      size="icon-xs"
+      className="-mr-1"
+      disabled={disabled}
+      onClick={onClick}
+    />
   )
 }
 
 export function Field({ label, children }: { label: string; children: (id: string) => ReactNode }) {
   const id = useId()
   return (
-    <div className="grid grid-cols-[52px_1fr] items-center gap-2">
+    <div className="grid grid-cols-[64px_1fr] items-center gap-2">
       <Label htmlFor={id} className="text-xs font-normal text-muted-foreground">
         {label}
       </Label>
@@ -37,6 +64,7 @@ interface NumberFieldProps {
   step?: number
   digits?: number
   suffix?: string
+  className?: string
 }
 
 export function NumberField({
@@ -45,12 +73,13 @@ export function NumberField({
   onCommit,
   step = 0.1,
   digits = 2,
-  suffix
+  suffix,
+  className
 }: NumberFieldProps) {
   const [draft, setDraft] = useState<string | null>(null)
   const coalesce = useCoalesceKey()
   return (
-    <div className="relative">
+    <div className={cn('relative', className)}>
       <Input
         id={id}
         type="number"
@@ -68,10 +97,13 @@ export function NumberField({
         onKeyDown={(event) => {
           if (event.key === 'Enter') event.currentTarget.blur()
         }}
-        className="h-9 rounded-lg border-0 bg-muted px-3 text-xs tabular-nums shadow-none md:text-xs focus-visible:ring-2 focus-visible:ring-ring/40 [&::-webkit-inner-spin-button]:appearance-none"
+        className={cn(
+          'h-8 rounded-md border-0 bg-muted px-2 text-xs tabular-nums shadow-none md:text-xs focus-visible:ring-2 focus-visible:ring-ring/40 [&::-webkit-inner-spin-button]:appearance-none',
+          suffix && 'pr-6'
+        )}
       />
       {suffix && (
-        <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-2xs text-muted-foreground">
+        <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-2xs text-muted-foreground">
           {suffix}
         </span>
       )}
@@ -88,6 +120,7 @@ interface PercentSliderProps {
   className?: string
 }
 
+// A slider with an editable percentage next to it. `value` is a ratio; `min` and `max` are percents.
 export function PercentSlider({
   id,
   value,
@@ -98,7 +131,7 @@ export function PercentSlider({
 }: PercentSliderProps) {
   const coalesce = useCoalesceKey()
   return (
-    <div className={cn('flex items-center gap-2', className)}>
+    <div className={cn('flex items-center gap-3', className)}>
       <Slider
         id={id}
         value={[value * 100]}
@@ -109,9 +142,30 @@ export function PercentSlider({
         onValueCommit={coalesce.end}
         className="[&_[data-slot=slider-thumb]]:size-3"
       />
-      <span className="w-9 shrink-0 text-right text-xs text-muted-foreground tabular-nums">
-        {Math.round(value * 100)}%
-      </span>
+      <NumberField
+        value={Math.round(value * 100)}
+        step={1}
+        digits={0}
+        suffix="%"
+        onCommit={(percent, key) => onChange(clamp(percent, min, max) / 100, key)}
+        className="w-16 shrink-0"
+      />
+    </div>
+  )
+}
+
+interface SliderFieldProps extends Omit<PercentSliderProps, 'id' | 'className'> {
+  label: string
+}
+
+export function SliderField({ label, ...slider }: SliderFieldProps) {
+  const id = useId()
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={id} className="text-xs font-normal text-muted-foreground">
+        {label}
+      </Label>
+      <PercentSlider id={id} {...slider} />
     </div>
   )
 }

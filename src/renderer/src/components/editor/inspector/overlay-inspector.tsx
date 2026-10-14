@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { ColorField } from '@/components/ui/color-field'
-import { Field, NumberField, PercentSlider, Section } from '@/components/ui/field'
+import { Field, NumberField, Section, SliderField } from '@/components/ui/field'
 import { useCoalesceKey } from '@/hooks/use-coalesce-key'
 import type { ImageMedia, ImageOverlay, Overlay, TextOverlay } from '../../../../../shared/sequence'
 import { clamp } from '@/lib/format'
@@ -43,6 +43,7 @@ export function TextInspector({ overlay, onChange }: OverlayInspectorProps<TextO
               onCommit={(value, coalesce) =>
                 onChange({ ...overlay, fontSize: clamp(value, 4, 1000) }, coalesce)
               }
+              className="w-20"
             />
           )}
         </Field>
@@ -64,16 +65,12 @@ export function ImageInspector({
     <>
       <Section>
         <p className="truncate text-xs">{image?.name ?? 'Missing image'}</p>
-        <Field label="Width">
-          {(id) => (
-            <PercentSlider
-              id={id}
-              value={overlay.widthRatio}
-              min={5}
-              onChange={(widthRatio, coalesce) => onChange({ ...overlay, widthRatio }, coalesce)}
-            />
-          )}
-        </Field>
+        <SliderField
+          label="Width"
+          value={overlay.widthRatio}
+          min={5}
+          onChange={(widthRatio, coalesce) => onChange({ ...overlay, widthRatio }, coalesce)}
+        />
       </Section>
     </>
   )

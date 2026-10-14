@@ -2,11 +2,17 @@ import { useRef } from 'react'
 import { VolumeHighIcon, VolumeMute02Icon } from '@hugeicons/core-free-icons'
 import { IconButton } from '@/components/ui/icon-button'
 import type { Edit } from '@/components/editor/editor'
-import { Field, NumberField, PercentSlider, Section } from '@/components/ui/field'
+import {
+  Field,
+  NumberField,
+  PercentSlider,
+  ResetButton,
+  Section,
+  SliderField
+} from '@/components/ui/field'
 import { Tabs } from '@/components/ui/tabs'
 import { ToggleGroup } from '@/components/ui/toggle-group'
 import { MAX_SCALE, MIN_SCALE, type Clip, type ClipTransform } from '../../../../../shared/sequence'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 const SPEEDS = [0.25, 0.5, 1, 1.5, 2, 4]
@@ -42,49 +48,53 @@ export function ClipInspector({ clip, tab, edit }: ClipInspectorProps) {
 
   if (tab === 'video') {
     return (
-      <Section title="Transform">
-        <Field label="Scale">
-          {(id) => (
-            <PercentSlider
-              id={id}
-              value={clip.scale}
-              min={MIN_SCALE * 100}
-              max={MAX_SCALE * 100}
-              onChange={(scale, coalesce) => setTransform({ scale }, coalesce)}
+      <>
+        <Section
+          title="Position & Size"
+          action={
+            <ResetButton
+              disabled={clip.scale === 1 && clip.rotation === 0}
+              onClick={() => setTransform({ scale: 1, rotation: 0 })}
             />
-          )}
-        </Field>
-        <Field label="Opacity">
-          {(id) => (
-            <PercentSlider
-              id={id}
-              value={clip.opacity}
-              onChange={(opacity, coalesce) => setTransform({ opacity }, coalesce)}
-            />
-          )}
-        </Field>
-        <Field label="Rotate">
-          {(id) => (
-            <NumberField
-              id={id}
-              value={clip.rotation}
-              step={1}
-              digits={0}
-              suffix="°"
-              onCommit={(rotation, coalesce) => setTransform({ rotation }, coalesce)}
-            />
-          )}
-        </Field>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="self-start"
-          disabled={clip.scale === 1 && clip.opacity === 1 && clip.rotation === 0}
-          onClick={() => setTransform({ scale: 1, opacity: 1, rotation: 0 })}
+          }
         >
-          Reset
-        </Button>
-      </Section>
+          <SliderField
+            label="Scale"
+            value={clip.scale}
+            min={MIN_SCALE * 100}
+            max={MAX_SCALE * 100}
+            onChange={(scale, coalesce) => setTransform({ scale }, coalesce)}
+          />
+          <Field label="Rotate">
+            {(id) => (
+              <NumberField
+                id={id}
+                value={clip.rotation}
+                step={1}
+                digits={0}
+                suffix="°"
+                onCommit={(rotation, coalesce) => setTransform({ rotation }, coalesce)}
+                className="w-20"
+              />
+            )}
+          </Field>
+        </Section>
+        <Section
+          title="Blend"
+          action={
+            <ResetButton
+              disabled={clip.opacity === 1}
+              onClick={() => setTransform({ opacity: 1 })}
+            />
+          }
+        >
+          <SliderField
+            label="Opacity"
+            value={clip.opacity}
+            onChange={(opacity, coalesce) => setTransform({ opacity }, coalesce)}
+          />
+        </Section>
+      </>
     )
   }
 
