@@ -116,6 +116,20 @@ describe('editSequence', () => {
     ])
   })
 
+  it('reorders a clip on the magnetic track and closes every gap', () => {
+    let sequence = editSequence(emptySequence(), { type: 'addClip', clipId: 'a', media: A })
+    sequence = editSequence(sequence, { type: 'addClip', clipId: 'b', media: B })
+    sequence = editSequence(sequence, { type: 'addClip', clipId: 'c', media: B })
+    sequence = editSequence(sequence, { type: 'moveClip', clipId: 'b', start: 20 })
+    expect(clipStarts(sequence.clips)).toEqual([0, 14, 20])
+
+    sequence = editSequence(sequence, { type: 'reorderClip', clipId: 'b', index: 0 })
+    expect(sequence.clips.map((clip) => clip.id)).toEqual(['b', 'a', 'c'])
+    expect(clipStarts(sequence.clips)).toEqual([0, 4, 14])
+
+    expect(editSequence(sequence, { type: 'reorderClip', clipId: 'b', index: 0 })).toBe(sequence)
+  })
+
   it('reorders clips and drops every use of removed media', () => {
     let sequence = editSequence(emptySequence(), { type: 'addClip', clipId: 'a', media: A })
     sequence = editSequence(sequence, { type: 'addClip', clipId: 'b', media: B })

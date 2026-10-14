@@ -174,6 +174,16 @@ function fromStarts(placed: readonly { clip: Clip; start: number }[]): Clip[] {
   })
 }
 
+// The magnetic track: puts the clip at the index in the order and closes every gap.
+export function reorderClips(clips: readonly Clip[], clipId: string, index: number): Clip[] {
+  const from = clips.findIndex((clip) => clip.id === clipId)
+  if (from === -1) return [...clips]
+  return clips
+    .toSpliced(from, 1)
+    .toSpliced(index, 0, clips[from])
+    .map((clip) => (clip.gap === 0 ? clip : { ...clip, gap: 0 }))
+}
+
 function withGap(clips: readonly Clip[], index: number, gap: number): Clip[] {
   const clip = clips[index]
   return clip ? clips.toSpliced(index, 1, { ...clip, gap: Math.max(gap, 0) }) : [...clips]
@@ -189,6 +199,7 @@ export type SequenceAction =
   | { type: 'removeClip'; clipId: string }
   | { type: 'duplicateClip'; clipId: string; newClipId: string }
   | { type: 'moveClip'; clipId: string; start: number }
+  | { type: 'reorderClip'; clipId: string; index: number }
   | { type: 'closeGap'; clipId: string }
   | { type: 'setTrack'; track: TrackId; change: Partial<Track> }
   | { type: 'setAspect'; width: number; height: number }
@@ -316,6 +327,11 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
       const start = Math.max(Math.min(action.start, nextStart), previousEnd)
       const placed = others.toSpliced(to, 0, { clip: moved, start })
       return { ...sequence, clips: fromStarts(placed) }
+    }
+    case 'reorderClip': {
+      const clips = reorderClips(sequence.clips, action.clipId, action.index)
+      const unchanged = clips.every((clip, index) => clip === sequence.clips[index])
+      return unchanged ? sequence : { ...sequence, clips }
     }
     case 'closeGap': {
       const index = sequence.clips.findIndex((clip) => clip.id === action.clipId)
