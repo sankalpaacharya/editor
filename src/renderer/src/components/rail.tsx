@@ -44,13 +44,13 @@ export function RailButton({ label, icon, active, onSelect }: RailItem) {
       onClick={onSelect}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'group flex w-14 flex-col items-center gap-1 py-1 text-[10px] font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg',
+        'group flex w-12 flex-col items-center gap-1 py-1 text-[10px] font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg',
         active ? 'text-brand' : 'text-muted-foreground hover:text-foreground'
       )}
     >
       <span
         className={cn(
-          'flex size-9 items-center justify-center rounded-lg transition-colors',
+          'flex size-8 items-center justify-center rounded-md transition-colors',
           active ? 'bg-brand/15' : 'group-hover:bg-secondary'
         )}
       >

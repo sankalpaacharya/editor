@@ -209,7 +209,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
         onExport={() => exporter.start(sequence)}
       />
       <div className="flex min-h-0 flex-1 gap-2">
-        <nav className="flex w-[72px] shrink-0 flex-col items-center gap-1 rounded-lg bg-card py-3">
+        <nav className="flex w-14 shrink-0 flex-col items-center gap-1.5 rounded-lg bg-card py-2.5">
           <RailButton
             label="Media"
             icon={Image01Icon}
