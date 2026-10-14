@@ -118,6 +118,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
   function deleteSelection() {
     if (selection?.kind === 'clip') edit({ type: 'removeClip', clipId: selection.id })
     else if (selection?.kind === 'overlay') edit({ type: 'removeOverlay', overlayId: selection.id })
+    else if (selection?.kind === 'gap') edit({ type: 'closeGap', clipId: selection.id })
     setSelection(null)
   }
 

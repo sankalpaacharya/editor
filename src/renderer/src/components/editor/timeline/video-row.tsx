@@ -117,8 +117,31 @@ export function VideoRow({
   return (
     <div className="relative rounded-md bg-white/[0.02]" style={{ height: VIDEO_ROW_HEIGHT }}>
       {clips.map((clip, index) => {
+        if (clip.gap === 0) return null
+        const selected = selection?.kind === 'gap' && selection.id === clip.id
+        return (
+          <div
+            key={`gap-${clip.id}`}
+            onPointerDown={(event) => {
+              event.stopPropagation()
+              onSelect({ kind: 'gap', id: clip.id })
+              onSeek(event.clientX)
+            }}
+            className={cn(
+              'absolute inset-y-0 flex items-center justify-center rounded-md text-[10px] transition-colors',
+              selected
+                ? 'bg-selection/15 text-selection ring-1 ring-selection/60 ring-inset'
+                : 'text-transparent hover:bg-white/[0.04] hover:text-muted-foreground'
+            )}
+            style={clipBox(starts[index] - clip.gap, clip.gap, pps)}
+          >
+            <span className="truncate px-1">Delete gap</span>
+          </div>
+        )
+      })}
+      {clips.map((clip, index) => {
         const media = mediaById.get(clip.mediaId)
-        const selected = selection?.id === clip.id
+        const selected = selection?.kind === 'clip' && selection.id === clip.id
         const offset = drag?.clipId === clip.id ? drag.dx : 0
         const box = clipBox(starts[index], timelineLength(clip), pps)
         return (

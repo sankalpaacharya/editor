@@ -66,6 +66,9 @@ describe('editSequence', () => {
     expect(clipStarts(sequence.clips)).toEqual([0, 10])
     sequence = editSequence(sequence, { type: 'placeClip', clipId: 'a', start: 5 })
     expect(clipStarts(sequence.clips)).toEqual([2, 10])
+
+    sequence = editSequence(sequence, { type: 'closeGap', clipId: 'a' })
+    expect(clipStarts(sequence.clips)).toEqual([0, 8])
   })
 
   it('reorders clips and drops every use of removed media', () => {

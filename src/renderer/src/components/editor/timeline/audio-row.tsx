@@ -72,7 +72,9 @@ export function AudioRow({
             <div
               className={cn(
                 'pointer-events-none absolute inset-0 rounded-md ring-inset',
-                selection?.id === clip.id ? 'ring-[3px] ring-selection' : 'ring-1 ring-white/20'
+                selection?.kind === 'clip' && selection.id === clip.id
+                  ? 'ring-[3px] ring-selection'
+                  : 'ring-1 ring-white/20'
               )}
             />
           </div>

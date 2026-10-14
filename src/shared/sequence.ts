@@ -156,6 +156,7 @@ export type SequenceAction =
   | { type: 'duplicateClip'; clipId: string; newClipId: string }
   | { type: 'moveClip'; clipId: string; toIndex: number }
   | { type: 'placeClip'; clipId: string; start: number }
+  | { type: 'closeGap'; clipId: string }
   | { type: 'addOverlay'; overlay: Overlay }
   | { type: 'updateOverlay'; overlay: Overlay }
   | { type: 'removeOverlay'; overlayId: string }
@@ -265,6 +266,10 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
         ...sequence,
         clips: next ? withGap(clips, index + 1, next.gap + clip.gap - gap) : clips
       }
+    }
+    case 'closeGap': {
+      const index = sequence.clips.findIndex((clip) => clip.id === action.clipId)
+      return index === -1 ? sequence : { ...sequence, clips: withGap(sequence.clips, index, 0) }
     }
     case 'addOverlay':
       return { ...sequence, overlays: [...sequence.overlays, action.overlay] }
