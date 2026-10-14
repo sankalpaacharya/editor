@@ -9,7 +9,7 @@ import {
 import { IconButton } from '@/components/icon-button'
 import type { Edit } from '@/components/editor/editor'
 import { PercentSlider, Section } from '@/components/editor/inspector/fields'
-import type { Clip, VideoMedia } from '../../../../../shared/sequence'
+import type { Clip } from '../../../../../shared/sequence'
 import { cn } from '@/lib/utils'
 
 const SPEEDS = [0.25, 0.5, 1, 1.5, 2, 4]
@@ -18,11 +18,10 @@ type Tool = 'speed' | 'sound'
 
 interface ClipInspectorProps {
   clip: Clip
-  media: VideoMedia | undefined
   edit: Edit
 }
 
-export function ClipInspector({ clip, media, edit }: ClipInspectorProps) {
+export function ClipInspector({ clip, edit }: ClipInspectorProps) {
   const unmutedVolume = useRef(clip.volume > 0 ? clip.volume : 1)
   const [tool, setTool] = useState<Tool | null>(null)
 
@@ -34,17 +33,6 @@ export function ClipInspector({ clip, media, edit }: ClipInspectorProps) {
 
   return (
     <>
-      <Section>
-        <p className="truncate text-xs" title={media?.name}>
-          {media?.name ?? 'Missing media'}
-        </p>
-        {media && (
-          <p className="-mt-1.5 text-[11px] text-muted-foreground tabular-nums">
-            {media.width}×{media.height} · {Number(media.fps.toFixed(2))} fps
-            {!media.hasAudio && ' · no audio'}
-          </p>
-        )}
-      </Section>
       {tool === null ? (
         <Section>
           <div className="grid grid-cols-2 gap-1.5">

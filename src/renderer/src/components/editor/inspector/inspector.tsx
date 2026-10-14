@@ -39,7 +39,6 @@ export function Inspector({
     edit({ type: 'updateOverlay', overlay: next }, coalesce)
 
   const title = clip ? 'Clip' : overlay?.kind === 'text' ? 'Text' : overlay ? 'Image' : 'Project'
-  const media = clip ? mediaById.get(clip.mediaId) : undefined
   const image = overlay?.kind === 'image' ? mediaById.get(overlay.mediaId) : undefined
 
   return (
@@ -60,12 +59,7 @@ export function Inspector({
     >
       <div className="min-h-0 flex-1 overflow-y-auto">
         {clip ? (
-          <ClipInspector
-            key={clip.id}
-            clip={clip}
-            media={media?.kind === 'video' ? media : undefined}
-            edit={edit}
-          />
+          <ClipInspector key={clip.id} clip={clip} edit={edit} />
         ) : overlay?.kind === 'text' ? (
           <TextInspector
             key={overlay.id}
