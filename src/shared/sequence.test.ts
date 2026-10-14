@@ -29,7 +29,18 @@ describe('editSequence', () => {
     sequence = editSequence(sequence, { type: 'split', time: 4, newClipId: 'b' })
     sequence = editSequence(sequence, { type: 'removeClip', clipId: 'a' })
     expect(sequence.clips).toEqual([
-      { id: 'b', mediaId: A.id, in: 4, out: 10, speed: 1, volume: 1, gap: 0 }
+      {
+        id: 'b',
+        mediaId: A.id,
+        in: 4,
+        out: 10,
+        speed: 1,
+        volume: 1,
+        gap: 0,
+        scale: 1,
+        opacity: 1,
+        rotation: 0
+      }
     ])
     expect(timelineDuration(sequence.clips)).toBe(6)
   })
@@ -122,8 +133,30 @@ describe('editSequence', () => {
 describe('locate', () => {
   it('maps timeline time to source time across clips of different media and speeds', () => {
     const clips = [
-      { id: 'b', mediaId: B.id, in: 0, out: 4, speed: 2, volume: 1, gap: 0 },
-      { id: 'a', mediaId: A.id, in: 0, out: 2, speed: 1, volume: 1, gap: 1 }
+      {
+        id: 'b',
+        mediaId: B.id,
+        in: 0,
+        out: 4,
+        speed: 2,
+        volume: 1,
+        gap: 0,
+        scale: 1,
+        opacity: 1,
+        rotation: 0
+      },
+      {
+        id: 'a',
+        mediaId: A.id,
+        in: 0,
+        out: 2,
+        speed: 1,
+        volume: 1,
+        gap: 1,
+        scale: 1,
+        opacity: 1,
+        rotation: 0
+      }
     ]
     expect(timelineDuration(clips)).toBe(5)
     expect(locate(clips, 1)).toMatchObject({ index: 0, sourceTime: 2 })

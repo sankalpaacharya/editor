@@ -60,20 +60,47 @@ function imageFilter(overlay: ImageOverlay): string {
   ].join(':')
 }
 
-function videoChain(clip: Clip, input: number, format: Format, enabled: boolean): string {
+const isIdentity = (clip: Clip): boolean =>
+  clip.scale === 1 && clip.opacity === 1 && clip.rotation === 0
+
+// Fits the clip inside the frame like `object-fit: contain`, then scales, rotates and fades it
+// over a black frame around the centre, matching the preview.
+function transformedPicture(clip: Clip, source: string, label: string, format: Format): string {
+  const { width, height, fps } = format
+  const angle = ((clip.rotation * Math.PI) / 180).toFixed(5)
+  const picture = [
+    `${source}scale=${Math.round(width * clip.scale)}:${Math.round(height * clip.scale)}:force_original_aspect_ratio=decrease`,
+    'format=rgba',
+    clip.rotation !== 0 && `rotate=${angle}:c=none:ow=rotw(${angle}):oh=roth(${angle})`,
+    clip.opacity !== 1 && `colorchannelmixer=aa=${clip.opacity.toFixed(3)}`
+  ].filter(Boolean)
+  return [
+    `${blackChain(timelineLength(clip), format)}[${label}bg]`,
+    `${picture.join(',')}[${label}fg]`,
+    `[${label}bg][${label}fg]overlay=(W-w)/2:(H-h)/2,format=yuv420p,fps=${fps}`
+  ].join(';')
+}
+
+function videoChain(
+  clip: Clip,
+  input: number,
+  format: Format,
+  enabled: boolean,
+  label: string
+): string {
   const { width, height, fps } = format
   if (!enabled) return blackChain(timelineLength(clip), format)
-  return [
-    `[${input}:v:0]trim=start=${clip.in.toFixed(3)}:end=${clip.out.toFixed(3)}`,
-    `setpts=(PTS-STARTPTS)/${clip.speed}`,
-    `scale=${width}:${height}:force_original_aspect_ratio=decrease`,
-    `pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:black`,
-    'setsar=1',
-    `fps=${fps}`,
-    // When clips share an input, fps pads a segment up to the input's end-of-stream time
-    // (ffmpeg 6.0), which concat then plays as frozen frames. Cut it back to the clip.
-    `trim=duration=${timelineLength(clip).toFixed(3)}`
-  ].join(',')
+  const timed = `[${input}:v:0]trim=start=${clip.in.toFixed(3)}:end=${clip.out.toFixed(3)},setpts=(PTS-STARTPTS)/${clip.speed},`
+  const picture = isIdentity(clip)
+    ? [
+        `${timed}scale=${width}:${height}:force_original_aspect_ratio=decrease`,
+        `pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:black`,
+        `fps=${fps}`
+      ].join(',')
+    : transformedPicture(clip, timed, label, format)
+  // When clips share an input, fps pads a segment up to the input's end-of-stream time
+  // (ffmpeg 6.0), which concat then plays as frozen frames. Cut it back to the clip.
+  return `${picture},setsar=1,trim=duration=${timelineLength(clip).toFixed(3)}`
 }
 
 function audioChain(clip: Clip, input: number, media: VideoMedia, enabled: boolean): string {
@@ -114,7 +141,7 @@ export function buildExportArgs(sequence: Sequence, inputs: ExportInputs): strin
   const segments = clips.flatMap((clip, i) => {
     const input = videos.indexOf(clip.mediaId)
     const media = videoMedia(inputs, clip.mediaId)
-    graph.push(`${videoChain(clip, input, format, tracks.video.enabled)}[v${i}]`)
+    graph.push(`${videoChain(clip, input, format, tracks.video.enabled, `t${i}`)}[v${i}]`)
     graph.push(`${audioChain(clip, input, media, tracks.audio.enabled)}[a${i}]`)
     if (clip.gap === 0) return [`[v${i}][a${i}]`]
     const [video, audio] = gapChains(clip.gap, format)

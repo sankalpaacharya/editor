@@ -44,7 +44,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
   const select: Select = (item, additive) =>
     setSelection((current) => nextSelection(current, item, additive))
   const [panel, setPanel] = useState<'media' | 'text'>('media')
-  const [clipTab, setClipTab] = useState<ClipTab>('speed')
+  const [clipTab, setClipTab] = useState<ClipTab>('video')
   const [volume, setVolume] = useState<PreviewVolume>({ level: 1, muted: false })
   const audible = sequence.tracks.audio.enabled && !volume.muted
   const playback = usePlayback(sequence.clips, audible ? volume.level : 0)

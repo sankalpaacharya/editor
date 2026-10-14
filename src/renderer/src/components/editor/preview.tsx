@@ -7,7 +7,15 @@ import {
   type ReactNode
 } from 'react'
 import { mediaUrl } from '../../../../shared/api'
-import type { ImageMedia, MediaId, MediaItem, Overlay, Sequence } from '../../../../shared/sequence'
+import {
+  locate,
+  type ClipTransform,
+  type ImageMedia,
+  type MediaId,
+  type MediaItem,
+  type Overlay,
+  type Sequence
+} from '../../../../shared/sequence'
 import type { Edit } from '@/components/editor/editor'
 import { Panel } from '@/components/ui/panel'
 import { useElementSize } from '@/hooks/use-element-size'
@@ -53,6 +61,8 @@ export function Preview({
     0
   )
   const frame = { width: format.width * fit, height: format.height * fit }
+  const position = locate(sequence.clips, playhead)
+  const activeClip = position && !position.inGap ? position.clip : undefined
   const videoIds = [...new Set(sequence.clips.map((clip) => clip.mediaId))]
 
   function startDrag(event: PointerEvent<HTMLDivElement>, overlay: Overlay) {
@@ -122,6 +132,7 @@ export function Preview({
                 key={id}
                 id={id}
                 visible={id === activeMediaId && sequence.tracks.video.enabled}
+                transform={id === activeMediaId ? activeClip : undefined}
                 registerVideo={registerVideo}
               />
             ))}
@@ -184,12 +195,13 @@ export function Preview({
 }
 
 interface PreviewVideoProps {
+  transform?: ClipTransform
   id: MediaId
   visible: boolean
   registerVideo: (id: MediaId, video: HTMLVideoElement | null) => void
 }
 
-function PreviewVideo({ id, visible, registerVideo }: PreviewVideoProps) {
+function PreviewVideo({ id, visible, transform, registerVideo }: PreviewVideoProps) {
   const ref = useCallback(
     (video: HTMLVideoElement | null) => registerVideo(id, video),
     [id, registerVideo]
@@ -201,6 +213,12 @@ function PreviewVideo({ id, visible, registerVideo }: PreviewVideoProps) {
       src={mediaUrl.source(id)}
       preload="auto"
       className={cn('absolute inset-0 size-full object-contain', !visible && 'invisible')}
+      style={
+        transform && {
+          transform: `scale(${transform.scale}) rotate(${transform.rotation}deg)`,
+          opacity: transform.opacity
+        }
+      }
     />
   )
 }

@@ -97,9 +97,42 @@ describe('buildExportArgs', () => {
     const sequence = {
       format: { width: 640, height: 360, fps: 30 },
       clips: [
-        { id: 'a', mediaId: LANDSCAPE, in: 2, out: 6, speed: 2, volume: 0.5, gap: 0 },
-        { id: 'b', mediaId: SILENT, in: 0, out: 3, speed: 1, volume: 1, gap: 0 },
-        { id: 'c', mediaId: LANDSCAPE, in: 0, out: 1.5, speed: 1, volume: 1, gap: 1 }
+        {
+          id: 'a',
+          mediaId: LANDSCAPE,
+          in: 2,
+          out: 6,
+          speed: 2,
+          volume: 0.5,
+          gap: 0,
+          scale: 1,
+          opacity: 1,
+          rotation: 0
+        },
+        {
+          id: 'b',
+          mediaId: SILENT,
+          in: 0,
+          out: 3,
+          speed: 1,
+          volume: 1,
+          gap: 0,
+          scale: 1.4,
+          opacity: 0.6,
+          rotation: 12
+        },
+        {
+          id: 'c',
+          mediaId: LANDSCAPE,
+          in: 0,
+          out: 1.5,
+          speed: 1,
+          volume: 1,
+          gap: 1,
+          scale: 1,
+          opacity: 1,
+          rotation: 0
+        }
       ],
       overlays: [
         {

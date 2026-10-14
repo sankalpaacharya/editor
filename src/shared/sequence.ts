@@ -34,6 +34,8 @@ export type MediaItem = z.infer<typeof mediaItemSchema>
 export const MIN_SPEED = 0.25
 export const MAX_SPEED = 4
 export const MIN_CLIP_LENGTH = 0.1
+export const MIN_SCALE = 0.1
+export const MAX_SCALE = 4
 
 export const clipSchema = z.object({
   id: z.string(),
@@ -43,9 +45,14 @@ export const clipSchema = z.object({
   speed: z.number().finite().min(MIN_SPEED).max(MAX_SPEED),
   volume: unit.default(1),
   // Empty timeline time before the clip. Trims open and close gaps instead of shifting later clips.
-  gap: seconds.default(0)
+  gap: seconds.default(0),
+  // Picture transform around the frame centre, applied after fitting the clip to the frame.
+  scale: z.number().finite().min(MIN_SCALE).max(MAX_SCALE).default(1),
+  opacity: unit.default(1),
+  rotation: z.number().finite().min(-180).max(180).default(0)
 })
 export type Clip = z.infer<typeof clipSchema>
+export type ClipTransform = Pick<Clip, 'scale' | 'opacity' | 'rotation'>
 
 const overlayBase = {
   id: z.string(),
@@ -178,6 +185,7 @@ export type SequenceAction =
   | { type: 'trim'; clipId: string; in: number; out: number; mediaDuration: number }
   | { type: 'setSpeed'; clipId: string; speed: number }
   | { type: 'setVolume'; clipId: string; volume: number }
+  | { type: 'setTransform'; clipId: string; change: Partial<ClipTransform> }
   | { type: 'removeClip'; clipId: string }
   | { type: 'duplicateClip'; clipId: string; newClipId: string }
   | { type: 'moveClip'; clipId: string; start: number }
@@ -206,7 +214,10 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
         out: media.duration,
         speed: 1,
         volume: 1,
-        gap: 0
+        gap: 0,
+        scale: 1,
+        opacity: 1,
+        rotation: 0
       }
       const index = clamp(action.index ?? sequence.clips.length, 0, sequence.clips.length)
       const format =
@@ -258,6 +269,20 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
       const volume = clamp(action.volume, 0, 1)
       const clips = sequence.clips.map((clip) =>
         clip.id === action.clipId ? { ...clip, volume } : clip
+      )
+      return { ...sequence, clips }
+    }
+    case 'setTransform': {
+      const { scale, opacity, rotation } = action.change
+      const clips = sequence.clips.map((clip) =>
+        clip.id === action.clipId
+          ? {
+              ...clip,
+              scale: scale === undefined ? clip.scale : clamp(scale, MIN_SCALE, MAX_SCALE),
+              opacity: opacity === undefined ? clip.opacity : clamp(opacity, 0, 1),
+              rotation: rotation === undefined ? clip.rotation : clamp(rotation, -180, 180)
+            }
+          : clip
       )
       return { ...sequence, clips }
     }
