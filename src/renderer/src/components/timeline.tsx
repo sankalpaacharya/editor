@@ -85,7 +85,7 @@ export function Timeline({
   function pressTrimHandle(event: PointerEvent<HTMLDivElement>, clip: Clip, edge: 'in' | 'out') {
     event.stopPropagation()
     trackPointer(event, (_move, dx) => {
-      const delta = dx / pps
+      const delta = (dx / pps) * clip.speed
       dispatch({
         type: 'trim',
         clipId: clip.id,
@@ -143,6 +143,9 @@ export function Timeline({
                 >
                   <span className="truncate px-2 tabular-nums">
                     {formatTime(clip.in)}–{formatTime(clip.out)}
+                    {clip.speed !== 1 && (
+                      <span className="ml-1.5 text-muted-foreground">{clip.speed}x</span>
+                    )}
                   </span>
                   {selected && (
                     <>

@@ -1,19 +1,25 @@
 import {
-  createProject,
   editProject,
   type ImageAsset,
   type ImageOverlay,
-  type MediaInfo,
   type Project,
   type ProjectAction,
   type TextOverlay
 } from '../../../shared/project'
 
-export type EditorAction = { type: 'load'; source: MediaInfo; clipId: string } | ProjectAction
+/** `edited` stays false until the user changes the project, so a fresh load is never saved. */
+export interface OpenProject {
+  project: Project
+  edited: boolean
+}
 
-export function editorReducer(project: Project | null, action: EditorAction): Project | null {
-  if (action.type === 'load') return createProject(action.source, action.clipId)
-  return project && editProject(project, action)
+export type EditorAction = { type: 'load'; project: Project } | { type: 'close' } | ProjectAction
+
+export function editorReducer(state: OpenProject | null, action: EditorAction): OpenProject | null {
+  if (action.type === 'load') return { project: action.project, edited: false }
+  if (action.type === 'close' || !state) return null
+  const project = editProject(state.project, action)
+  return project === state.project ? state : { project, edited: true }
 }
 
 export type Selection = { kind: 'clip' | 'overlay'; id: string } | null
@@ -27,6 +33,21 @@ export function formatTime(seconds: number): string {
   const secs = Math.floor(tenths / 10) % 60
   return `${minutes}:${String(secs).padStart(2, '0')}.${tenths % 10}`
 }
+
+export function formatDate(iso: string): string {
+  const date = new Date(iso)
+  const now = new Date()
+  if (date.toDateString() === now.toDateString()) {
+    return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+  }
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric'
+  })
+}
+
+export const fileName = (path: string): string => path.split(/[\\/]/).pop() ?? path
 
 function overlayTiming(playhead: number, duration: number) {
   return { id: crypto.randomUUID(), start: playhead, end: Math.min(playhead + 3, duration) }

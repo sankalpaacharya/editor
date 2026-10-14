@@ -1,12 +1,16 @@
 import { basename, extname } from 'node:path'
-import { BrowserWindow, dialog, ipcMain, type IpcMainInvokeEvent } from 'electron'
+import { BrowserWindow, dialog, ipcMain, shell, type IpcMainInvokeEvent } from 'electron'
 import { z } from 'zod'
-import { projectSchema } from '../shared/project'
-import { importImage, importVideo } from './assets'
+import { assetIdSchema, projectSchema, timelineDuration } from '../shared/project'
+import { importImage } from './assets'
 import { cancelExport, runExport } from './export-job'
+import { exportPath, forgetVideo, listExports, listRecent, recordExport } from './library'
+import { openProject, openRecentProject, saveProject, videoIdOf } from './projects'
 
 const VIDEO_EXTENSIONS = ['mp4', 'mov', 'mkv', 'webm', 'm4v', 'avi']
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg']
+
+const rowId = z.number().int().positive()
 
 function windowOf(event: IpcMainInvokeEvent): BrowserWindow {
   const window = BrowserWindow.fromWebContents(event.sender)
@@ -25,14 +29,28 @@ async function pickFile(event: IpcMainInvokeEvent, name: string, extensions: str
 export function registerIpc(): void {
   ipcMain.handle('media:open-video', async (event) => {
     const path = await pickFile(event, 'Videos', VIDEO_EXTENSIONS)
-    return path ? importVideo(path) : null
+    return path ? openProject(path) : null
   })
 
   ipcMain.handle('media:import-video', (_event, input: unknown) => {
     const path = z.string().min(1).parse(input)
     const extension = extname(path).slice(1).toLowerCase()
     if (!VIDEO_EXTENSIONS.includes(extension)) throw new Error(`${basename(path)} is not a video`)
-    return importVideo(path)
+    return openProject(path)
+  })
+
+  ipcMain.handle('library:open', (_event, input: unknown) => openRecentProject(rowId.parse(input)))
+  ipcMain.handle('library:list', () => listRecent())
+  ipcMain.handle('library:forget', (_event, input: unknown) => forgetVideo(rowId.parse(input)))
+  ipcMain.handle('library:save', (_event, input: unknown) =>
+    saveProject(projectSchema.parse(input))
+  )
+  ipcMain.handle('library:exports', (_event, input: unknown) =>
+    listExports(videoIdOf(assetIdSchema.parse(input)))
+  )
+  ipcMain.handle('library:reveal-export', (_event, input: unknown) => {
+    const path = exportPath(rowId.parse(input))
+    if (path) shell.showItemInFolder(path)
   })
 
   ipcMain.handle('media:open-image', async (event) => {
@@ -47,9 +65,13 @@ export function registerIpc(): void {
       filters: [{ name: 'MP4 video', extensions: ['mp4'] }]
     })
     if (canceled || !filePath) return { status: 'canceled' }
-    return runExport(project, filePath, (fraction) => {
+    const result = await runExport(project, filePath, (fraction) => {
       if (!event.sender.isDestroyed()) event.sender.send('export:progress', fraction)
     })
+    if (result.status === 'done') {
+      recordExport(videoIdOf(project.source.assetId), filePath, timelineDuration(project.clips))
+    }
+    return result
   })
 
   ipcMain.handle('export:cancel', () => cancelExport())

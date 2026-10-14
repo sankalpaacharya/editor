@@ -68,11 +68,15 @@ async function probe(path: string) {
   }
 }
 
-async function grant(path: string): Promise<AssetId> {
-  if (!(await stat(path)).isFile()) throw new Error(`${path} is not a file`)
+export function grantPath(path: string): AssetId {
   const assetId = randomUUID()
   granted.set(assetId, path)
   return assetId
+}
+
+async function grant(path: string): Promise<AssetId> {
+  if (!(await stat(path)).isFile()) throw new Error(`${path} is not a file`)
+  return grantPath(path)
 }
 
 export async function importVideo(path: string): Promise<MediaInfo> {

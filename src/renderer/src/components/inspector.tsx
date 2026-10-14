@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Textarea } from '@/components/ui/textarea'
+import { ExportHistory } from '@/components/export-history'
 import { NumberField } from '@/components/number-field'
+import { cn } from '@/lib/utils'
 import {
   clipLength,
   type Clip,
@@ -19,11 +21,19 @@ interface InspectorProps {
   project: Project
   selection: Selection
   duration: number
+  exportsRevision: number
   dispatch: (action: ProjectAction) => void
   onDelete: () => void
 }
 
-export function Inspector({ project, selection, duration, dispatch, onDelete }: InspectorProps) {
+export function Inspector({
+  project,
+  selection,
+  duration,
+  exportsRevision,
+  dispatch,
+  onDelete
+}: InspectorProps) {
   const clipIndex =
     selection?.kind === 'clip' ? project.clips.findIndex((clip) => clip.id === selection.id) : -1
   const overlay =
@@ -32,7 +42,12 @@ export function Inspector({ project, selection, duration, dispatch, onDelete }: 
       : undefined
   const updateOverlay = (next: Overlay) => dispatch({ type: 'updateOverlay', overlay: next })
 
-  let body: ReactNode = <p className="text-xs text-muted-foreground">Nothing selected</p>
+  let body: ReactNode = (
+    <>
+      <p className="text-xs text-muted-foreground">Nothing selected</p>
+      <ExportHistory sourceAssetId={project.source.assetId} revision={exportsRevision} />
+    </>
+  )
   if (clipIndex !== -1) {
     body = (
       <ClipInspector
@@ -97,6 +112,8 @@ function DeleteButton({ onClick, disabled }: { onClick: () => void; disabled?: b
   )
 }
 
+const SPEEDS = [0.25, 0.5, 1, 1.5, 2, 4]
+
 interface ClipInspectorProps {
   clip: Clip
   index: number
@@ -123,6 +140,23 @@ function ClipInspector({ clip, index, count, dispatch, onDelete }: ClipInspector
       <Field label="Duration">
         {() => <span className="text-xs tabular-nums">{formatTime(clipLength(clip))}</span>}
       </Field>
+      <div className="flex flex-col gap-1.5">
+        <span className="text-xs text-muted-foreground">Speed</span>
+        <div className="grid grid-cols-6 gap-1">
+          {SPEEDS.map((speed) => (
+            <Button
+              key={speed}
+              variant={speed === clip.speed ? 'secondary' : 'ghost'}
+              size="xs"
+              aria-pressed={speed === clip.speed}
+              onClick={() => dispatch({ type: 'setSpeed', clipId: clip.id, speed })}
+              className={cn('px-0 tabular-nums', speed !== clip.speed && 'text-muted-foreground')}
+            >
+              {speed}x
+            </Button>
+          ))}
+        </div>
+      </div>
       <div className="grid grid-cols-2 gap-1.5">
         <Button variant="outline" size="sm" onClick={() => move(index - 1)} disabled={index === 0}>
           Move left

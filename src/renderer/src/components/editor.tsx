@@ -10,10 +10,11 @@ import { errorMessage, newImageOverlay, newTextOverlay, type Selection } from '@
 
 interface EditorProps {
   project: Project
+  exportsRevision: number
   dispatch: (action: ProjectAction) => void
 }
 
-export function Editor({ project, dispatch }: EditorProps) {
+export function Editor({ project, exportsRevision, dispatch }: EditorProps) {
   const [selection, setSelection] = useState<Selection>(null)
   const { videoRef, playhead, playing, duration, seek, toggle } = usePlayback(project.clips)
 
@@ -89,6 +90,7 @@ export function Editor({ project, dispatch }: EditorProps) {
           project={project}
           selection={selection}
           duration={duration}
+          exportsRevision={exportsRevision}
           dispatch={dispatch}
           onDelete={deleteSelection}
         />

@@ -8,6 +8,7 @@ export type ExportState = { status: 'idle' } | { status: 'running'; progress: nu
 
 export function useExport() {
   const [state, setState] = useState<ExportState>({ status: 'idle' })
+  const [finished, setFinished] = useState(0)
 
   async function start(project: Project) {
     setState({ status: 'running', progress: null })
@@ -16,7 +17,10 @@ export function useExport() {
     )
     try {
       const result = await window.editor.exportVideo(project)
-      if (result.status === 'done') toast.success('Export finished', { description: result.path })
+      if (result.status === 'done') {
+        toast.success('Export finished', { description: result.path })
+        setFinished((count) => count + 1)
+      }
     } catch (error) {
       toast.error('Export failed', { description: errorMessage(error) })
     } finally {
@@ -25,5 +29,5 @@ export function useExport() {
     }
   }
 
-  return { state, start, cancel: () => void window.editor.cancelExport() }
+  return { state, finished, start, cancel: () => void window.editor.cancelExport() }
 }
