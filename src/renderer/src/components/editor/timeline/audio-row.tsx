@@ -1,5 +1,3 @@
-import { HugeiconsIcon } from '@hugeicons/react'
-import { VolumeHighIcon, VolumeMute02Icon } from '@hugeicons/core-free-icons'
 import { useEffect, useState, type CSSProperties, type PointerEvent } from 'react'
 import {
   AUDIO_ROW_HEIGHT,
@@ -63,14 +61,7 @@ export function AudioRow({
               style={sourceSpan(clip, media, pps)}
               volume={clip.volume}
             />
-            <div className="pointer-events-none absolute inset-y-0 left-1.5 flex items-center gap-1.5 text-xs text-white">
-              <span className="flex size-5 shrink-0 items-center justify-center rounded-[4px] bg-black/25">
-                <HugeiconsIcon
-                  icon={clip.volume === 0 ? VolumeMute02Icon : VolumeHighIcon}
-                  strokeWidth={2}
-                  className="size-3"
-                />
-              </span>
+            <div className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-xs text-white">
               <span className="truncate">{hasAudio ? 'Original sound' : 'No audio'}</span>
             </div>
             <div
