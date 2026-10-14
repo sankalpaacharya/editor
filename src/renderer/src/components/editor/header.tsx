@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { ArrowLeft01Icon, Upload04Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@/components/ui/button'
+import { RaisedButton } from '@/components/ui/raised-button'
+import { BRAND } from '@/lib/brand'
 import { IconButton } from '@/components/icon-button'
 
 interface EditorHeaderProps {
@@ -59,15 +60,16 @@ export function EditorHeader({ name, onBack, onRename, canExport, onExport }: Ed
           />
         )}
       </nav>
-      <Button
+      <RaisedButton
         size="sm"
+        color={BRAND}
         onClick={onExport}
         disabled={!canExport}
-        className="ml-auto rounded-md border-brand/30 bg-brand/15 px-3 text-brand hover:bg-brand/25"
+        className="ml-auto h-8 px-3"
       >
         <HugeiconsIcon icon={Upload04Icon} strokeWidth={1.75} />
         Export
-      </Button>
+      </RaisedButton>
     </header>
   )
 }

@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { Add01Icon, Folder01Icon, Upload04Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { RaisedButton } from '@/components/ui/raised-button'
+import { BRAND } from '@/lib/brand'
 import { Rail } from '@/components/rail'
 import { ProjectCard } from '@/components/projects/project-card'
 import { useFileDrop } from '@/hooks/use-file-drop'
@@ -86,10 +87,16 @@ export function ProjectsPage({ onOpen }: { onOpen: (project: OpenProject) => voi
           {projects && projects.length > 0 && (
             <>
               <span className="text-xs text-muted-foreground tabular-nums">{projects.length}</span>
-              <Button size="sm" className="ml-auto rounded-md" onClick={create} disabled={busy}>
+              <RaisedButton
+                size="sm"
+                color={BRAND}
+                className="ml-auto h-8 px-3"
+                onClick={create}
+                disabled={busy}
+              >
                 <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
                 New project
-              </Button>
+              </RaisedButton>
             </>
           )}
         </header>
@@ -104,9 +111,15 @@ export function ProjectsPage({ onOpen }: { onOpen: (project: OpenProject) => voi
               <p className="text-xs font-medium">No projects yet</p>
               <p className="text-xs text-muted-foreground">Drop videos here to start one.</p>
             </div>
-            <Button size="sm" className="rounded-md" onClick={create} disabled={busy}>
+            <RaisedButton
+              size="sm"
+              color={BRAND}
+              className="h-8 px-3"
+              onClick={create}
+              disabled={busy}
+            >
               New project
-            </Button>
+            </RaisedButton>
           </div>
         ) : (
           <div className="grid min-h-0 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] content-start gap-3 overflow-y-auto p-4">
