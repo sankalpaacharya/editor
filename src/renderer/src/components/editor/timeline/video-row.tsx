@@ -126,15 +126,13 @@ export function VideoRow({
               onSeek(event.clientX)
             }}
             className={cn(
-              'absolute inset-y-0 flex items-center justify-center rounded-md text-2xs transition-colors',
+              'absolute inset-y-0 rounded-md transition-colors',
               selected
-                ? 'bg-selection/15 text-selection ring-1 ring-selection/60 ring-inset'
-                : 'text-transparent hover:bg-white/[0.04] hover:text-muted-foreground'
+                ? 'bg-selection/15 ring-1 ring-selection/60 ring-inset'
+                : 'hover:bg-white/[0.03]'
             )}
             style={clipBox(starts[index] - clip.gap, clip.gap, pps)}
-          >
-            <span className="truncate px-1">Delete gap</span>
-          </div>
+          />
         )
       })}
       {clips.map((clip, index) => {
