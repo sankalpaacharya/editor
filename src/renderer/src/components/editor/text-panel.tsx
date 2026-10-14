@@ -2,6 +2,8 @@ import { Add01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Panel } from '@/components/ui/panel'
 import { TEXT_PRESETS, type TextPreset } from '@/lib/overlays'
+import { Button } from '@/components/ui/button'
+import { Tile } from '@/components/ui/tile'
 
 interface TextPanelProps {
   canAdd: boolean
@@ -12,30 +14,24 @@ export function TextPanel({ canAdd, onAdd }: TextPanelProps) {
   return (
     <Panel title="Text" className="w-[280px] shrink-0">
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
-        <button
-          type="button"
-          disabled={!canAdd}
-          onClick={() => onAdd(TEXT_PRESETS[0])}
-          className="flex h-10 items-center justify-center gap-2 rounded-md bg-secondary text-sm font-medium transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
-        >
-          <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="size-4" />
+        <Button variant="secondary" disabled={!canAdd} onClick={() => onAdd(TEXT_PRESETS[0])}>
+          <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
           Add text
-        </button>
+        </Button>
         {!canAdd && (
           <p className="-mt-2 text-xs text-muted-foreground">Add a video first to place text.</p>
         )}
         <section className="flex flex-col gap-2">
-          <h3 className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+          <h3 className="text-2xs font-medium tracking-wide text-muted-foreground uppercase">
             Styles
           </h3>
           <div className="grid grid-cols-2 gap-2">
             {TEXT_PRESETS.map((preset) => (
-              <button
+              <Tile
                 key={preset.name}
-                type="button"
                 disabled={!canAdd}
                 onClick={() => onAdd(preset)}
-                className="group flex aspect-video flex-col items-center justify-center gap-1 rounded-md bg-muted px-2 transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-40"
+                className="aspect-video px-2"
               >
                 <span
                   className="truncate text-white"
@@ -43,10 +39,10 @@ export function TextPanel({ canAdd, onAdd }: TextPanelProps) {
                 >
                   {preset.sample}
                 </span>
-                <span className="text-[10px] text-muted-foreground group-hover:text-foreground">
+                <span className="text-2xs text-muted-foreground group-hover:text-foreground">
                   {preset.name}
                 </span>
-              </button>
+              </Tile>
             ))}
           </div>
         </section>

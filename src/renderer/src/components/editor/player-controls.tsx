@@ -5,6 +5,7 @@ import { IconButton } from '@/components/ui/icon-button'
 import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
 import type { Format } from '../../../../shared/sequence'
 import { formatClock } from '@/lib/format'
+import { Badge } from '@/components/ui/badge'
 
 const RATIOS = [
   [16, 9],
@@ -67,9 +68,7 @@ export function PlayerControls({
       </Tooltip>
 
       <div className="flex items-center justify-self-end gap-1">
-        <span className="rounded-[3px] border border-muted-foreground/40 px-1 text-[10px] leading-4 text-muted-foreground tabular-nums">
-          {ratioLabel(format)}
-        </span>
+        <Badge variant="outline">{ratioLabel(format)}</Badge>
         <IconButton
           icon={FullScreenIcon}
           label="Full screen"

@@ -21,6 +21,7 @@ import { clamp } from '@/lib/format'
 import { trackPointer } from '@/lib/pointer'
 import { isAdditive, isSelected, type Select, type Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
 
 const DRAG_THRESHOLD = 3
 
@@ -163,22 +164,18 @@ export function VideoRow({
             />
             <div
               className={cn(
-                'pointer-events-none absolute top-1.5 flex max-w-[calc(100%-16px)] items-center gap-1 text-[10px] leading-4 text-white/90',
+                'pointer-events-none absolute top-1.5 flex max-w-[calc(100%-16px)] items-center gap-1',
                 selected ? 'left-5' : 'left-1.5'
               )}
             >
-              <span className="truncate rounded-[4px] bg-black/55 px-1.5 backdrop-blur-sm">
-                {media?.name ?? 'Missing media'}
-              </span>
-              {clip.speed !== 1 && (
-                <span className="shrink-0 rounded-[4px] bg-black/55 px-1 font-medium tabular-nums backdrop-blur-sm">
-                  {clip.speed}x
-                </span>
-              )}
+              <Badge className="min-w-0 font-normal">
+                <span className="truncate">{media?.name ?? 'Missing media'}</span>
+              </Badge>
+              {clip.speed !== 1 && <Badge>{clip.speed}x</Badge>}
               {clip.volume === 0 && (
-                <span className="flex h-4 shrink-0 items-center rounded-[4px] bg-black/55 px-0.5 backdrop-blur-sm">
+                <Badge className="h-4 px-0.5">
                   <HugeiconsIcon icon={VolumeMute02Icon} strokeWidth={2} className="size-3" />
-                </span>
+                </Badge>
               )}
             </div>
             {selected &&

@@ -12,6 +12,7 @@ import { Thumbnail } from '@/components/thumbnail'
 import { DeleteProjectDialog, RenameProjectDialog } from '@/components/projects/project-dialogs'
 import type { ProjectSummary } from '../../../../shared/api'
 import { formatAgo, formatDuration } from '@/lib/format'
+import { Badge } from '@/components/ui/badge'
 
 interface ProjectCardProps {
   project: ProjectSummary
@@ -35,9 +36,9 @@ export function ProjectCard({ project, onOpen, onRename, onDelete }: ProjectCard
             className="size-full transition-[filter] group-hover:brightness-110"
           />
           {project.duration > 0 && (
-            <span className="absolute right-1.5 bottom-1.5 rounded-[4px] bg-black/70 px-1 py-px text-[10px] font-medium text-white/90 tabular-nums">
+            <Badge className="absolute right-1.5 bottom-1.5">
               {formatDuration(project.duration)}
-            </span>
+            </Badge>
           )}
         </div>
         <div className="flex h-8 items-baseline gap-2 pr-8 pl-2.5">

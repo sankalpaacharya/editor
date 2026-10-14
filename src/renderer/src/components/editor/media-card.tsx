@@ -11,6 +11,7 @@ import type { MediaItem } from '../../../../shared/sequence'
 import { formatDuration } from '@/lib/format'
 import { startMediaDrag } from '@/lib/media-drag'
 import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
 
 interface MediaCardProps {
   item: MediaItem
@@ -21,7 +22,7 @@ interface MediaCardProps {
 }
 
 const overlayButton =
-  'flex size-5 items-center justify-center rounded-[5px] bg-black/65 text-white/90 outline-none hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-ring'
+  'flex size-5 items-center justify-center rounded-sm bg-black/60 text-white/90 outline-none hover:bg-black/85 focus-visible:ring-2 focus-visible:ring-ring'
 
 export function MediaCard({ item, used, missing, onAdd, onRemove }: MediaCardProps) {
   return (
@@ -39,15 +40,9 @@ export function MediaCard({ item, used, missing, onAdd, onRemove }: MediaCardPro
         )}
       >
         <Thumbnail mediaId={item.id} kind={item.kind} className="size-full" />
-        {used && (
-          <span className="absolute top-1 left-1 rounded-[4px] bg-black/65 px-1 text-[10px] leading-4 text-white/90">
-            Added
-          </span>
-        )}
+        {used && <Badge className="absolute top-1 left-1">Added</Badge>}
         {item.kind === 'video' && (
-          <span className="absolute bottom-1 left-1 rounded-[4px] bg-black/65 px-1 text-[10px] leading-4 text-white/90 tabular-nums">
-            {formatDuration(item.duration)}
-          </span>
+          <Badge className="absolute bottom-1 left-1">{formatDuration(item.duration)}</Badge>
         )}
         <div className="absolute top-1 right-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 has-[[aria-expanded=true]]:opacity-100">
           {!missing && (

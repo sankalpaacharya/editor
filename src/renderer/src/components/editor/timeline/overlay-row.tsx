@@ -89,7 +89,7 @@ export function OverlayRow({
           >
             <span
               className={cn(
-                'flex size-5 shrink-0 items-center justify-center rounded-[4px] bg-black/25'
+                'flex size-5 shrink-0 items-center justify-center rounded-sm bg-black/25'
               )}
             >
               <HugeiconsIcon
