@@ -3,6 +3,11 @@
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/inter';
 
+@font-face {
+  font-family: 'Overlay';
+  src: url('../../../resources/fonts/NotoSans-SemiBold.ttf') format('truetype');
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
