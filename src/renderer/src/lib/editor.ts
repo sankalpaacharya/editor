@@ -49,8 +49,11 @@ export function formatDate(iso: string): string {
 
 export const fileName = (path: string): string => path.split(/[\\/]/).pop() ?? path
 
+const NEW_OVERLAY_LENGTH = 3
+
 function overlayTiming(playhead: number, duration: number) {
-  return { id: crypto.randomUUID(), start: playhead, end: Math.min(playhead + 3, duration) }
+  const start = Math.max(0, Math.min(playhead, duration - NEW_OVERLAY_LENGTH))
+  return { id: crypto.randomUUID(), start, end: Math.min(start + NEW_OVERLAY_LENGTH, duration) }
 }
 
 export function newTextOverlay(project: Project, playhead: number, duration: number): TextOverlay {
