@@ -7,7 +7,7 @@ import {
   type Overlay
 } from '../../../../../shared/sequence'
 
-export const GUTTER = 112
+export const GUTTER = 168
 export const TAIL = 160
 export const RULER_HEIGHT = 24
 export const VIDEO_ROW_HEIGHT = 52

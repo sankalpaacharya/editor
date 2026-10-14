@@ -64,6 +64,7 @@ export function Preview({
 
   function startDrag(event: PointerEvent<HTMLDivElement>, overlay: Overlay) {
     event.stopPropagation()
+    if (sequence.tracks.overlays.locked) return
     onSelect({ kind: 'overlay', id: overlay.id })
     const rect = frameRef.current?.getBoundingClientRect()
     if (!rect) return
@@ -127,7 +128,7 @@ export function Preview({
               <PreviewVideo
                 key={id}
                 id={id}
-                visible={id === activeMediaId}
+                visible={id === activeMediaId && sequence.tracks.video.enabled}
                 registerVideo={registerVideo}
               />
             ))}
@@ -137,7 +138,12 @@ export function Preview({
               </p>
             )}
             {sequence.overlays
-              .filter((overlay) => overlay.start <= playhead && playhead <= overlay.end)
+              .filter(
+                (overlay) =>
+                  sequence.tracks.overlays.enabled &&
+                  overlay.start <= playhead &&
+                  playhead <= overlay.end
+              )
               .map((overlay) => (
                 <div
                   key={overlay.id}

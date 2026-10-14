@@ -60,7 +60,9 @@ function imageFilter(overlay: ImageOverlay): string {
   ].join(':')
 }
 
-function videoChain(clip: Clip, input: number, { width, height, fps }: Format): string {
+function videoChain(clip: Clip, input: number, format: Format, enabled: boolean): string {
+  const { width, height, fps } = format
+  if (!enabled) return blackChain(timelineLength(clip), format)
   return [
     `[${input}:v:0]trim=start=${clip.in.toFixed(3)}:end=${clip.out.toFixed(3)}`,
     `setpts=(PTS-STARTPTS)/${clip.speed}`,
@@ -74,8 +76,8 @@ function videoChain(clip: Clip, input: number, { width, height, fps }: Format): 
   ].join(',')
 }
 
-function audioChain(clip: Clip, input: number, media: VideoMedia): string {
-  if (!media.hasAudio || clip.volume === 0) {
+function audioChain(clip: Clip, input: number, media: VideoMedia, enabled: boolean): string {
+  if (!enabled || !media.hasAudio || clip.volume === 0) {
     return `anullsrc=r=48000:cl=stereo,atrim=duration=${timelineLength(clip).toFixed(3)}`
   }
   const volume = clip.volume === 1 ? '' : `,volume=${clip.volume}`
@@ -85,12 +87,11 @@ function audioChain(clip: Clip, input: number, media: VideoMedia): string {
   )
 }
 
-function gapChains(gap: number, { width, height, fps }: Format): [string, string] {
-  const duration = gap.toFixed(3)
-  return [
-    `color=c=black:s=${width}x${height}:r=${fps}:d=${duration},setsar=1`,
-    `anullsrc=r=48000:cl=stereo,atrim=duration=${duration}`
-  ]
+const blackChain = (duration: number, { width, height, fps }: Format): string =>
+  `color=c=black:s=${width}x${height}:r=${fps}:d=${duration.toFixed(3)},setsar=1`
+
+function gapChains(gap: number, format: Format): [string, string] {
+  return [blackChain(gap, format), `anullsrc=r=48000:cl=stereo,atrim=duration=${gap.toFixed(3)}`]
 }
 
 function videoMedia(inputs: ExportInputs, mediaId: MediaId): VideoMedia {
@@ -100,7 +101,8 @@ function videoMedia(inputs: ExportInputs, mediaId: MediaId): VideoMedia {
 }
 
 export function buildExportArgs(sequence: Sequence, inputs: ExportInputs): string[] {
-  const { format, clips, overlays } = sequence
+  const { format, clips, tracks } = sequence
+  const overlays = tracks.overlays.enabled ? sequence.overlays : []
   if (clips.length === 0) throw new Error('The sequence has no clips to export')
 
   const videos = [...new Set(clips.map((clip) => clip.mediaId))]
@@ -111,8 +113,9 @@ export function buildExportArgs(sequence: Sequence, inputs: ExportInputs): strin
 
   const segments = clips.flatMap((clip, i) => {
     const input = videos.indexOf(clip.mediaId)
-    graph.push(`${videoChain(clip, input, format)}[v${i}]`)
-    graph.push(`${audioChain(clip, input, videoMedia(inputs, clip.mediaId))}[a${i}]`)
+    const media = videoMedia(inputs, clip.mediaId)
+    graph.push(`${videoChain(clip, input, format, tracks.video.enabled)}[v${i}]`)
+    graph.push(`${audioChain(clip, input, media, tracks.audio.enabled)}[a${i}]`)
     if (clip.gap === 0) return [`[v${i}][a${i}]`]
     const [video, audio] = gapChains(clip.gap, format)
     graph.push(`${video}[gv${i}]`, `${audio}[ga${i}]`)

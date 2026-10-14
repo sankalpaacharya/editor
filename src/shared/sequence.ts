@@ -82,17 +82,33 @@ export const formatSchema = z.object({
 })
 export type Format = z.infer<typeof formatSchema>
 
+export const TRACK_IDS = ['overlays', 'video', 'audio'] as const
+export type TrackId = (typeof TRACK_IDS)[number]
+
+// A disabled track is hidden (overlays, video) or muted (audio) in preview and export.
+const trackSchema = z.object({ enabled: z.boolean(), locked: z.boolean() })
+export type Track = z.infer<typeof trackSchema>
+const OPEN_TRACK: Track = { enabled: true, locked: false }
+
 export const sequenceSchema = z.object({
   format: formatSchema,
   clips: z.array(clipSchema),
-  overlays: z.array(overlaySchema)
+  overlays: z.array(overlaySchema),
+  tracks: z
+    .object({ overlays: trackSchema, video: trackSchema, audio: trackSchema })
+    .default({ overlays: OPEN_TRACK, video: OPEN_TRACK, audio: OPEN_TRACK })
 })
 export type Sequence = z.infer<typeof sequenceSchema>
 
 export const DEFAULT_FORMAT: Format = { width: 1920, height: 1080, fps: 30 }
 
 export function emptySequence(): Sequence {
-  return { format: DEFAULT_FORMAT, clips: [], overlays: [] }
+  return {
+    format: DEFAULT_FORMAT,
+    clips: [],
+    overlays: [],
+    tracks: { overlays: OPEN_TRACK, video: OPEN_TRACK, audio: OPEN_TRACK }
+  }
 }
 
 export function timelineLength(clip: Clip): number {
@@ -157,6 +173,7 @@ export type SequenceAction =
   | { type: 'moveClip'; clipId: string; toIndex: number }
   | { type: 'placeClip'; clipId: string; start: number }
   | { type: 'closeGap'; clipId: string }
+  | { type: 'setTrack'; track: TrackId; change: Partial<Track> }
   | { type: 'addOverlay'; overlay: Overlay }
   | { type: 'updateOverlay'; overlay: Overlay }
   | { type: 'removeOverlay'; overlayId: string }
@@ -270,6 +287,10 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
     case 'closeGap': {
       const index = sequence.clips.findIndex((clip) => clip.id === action.clipId)
       return index === -1 ? sequence : { ...sequence, clips: withGap(sequence.clips, index, 0) }
+    }
+    case 'setTrack': {
+      const track = { ...sequence.tracks[action.track], ...action.change }
+      return { ...sequence, tracks: { ...sequence.tracks, [action.track]: track } }
     }
     case 'addOverlay':
       return { ...sequence, overlays: [...sequence.overlays, action.overlay] }

@@ -38,7 +38,8 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
   const [missing, setMissing] = useState<ReadonlySet<MediaId>>(new Set(project.missingMedia))
   const [selection, setSelection] = useState<Selection>(null)
   const [master, setMaster] = useState<MasterVolume>({ level: 1, muted: false })
-  const playback = usePlayback(sequence.clips, master.muted ? 0 : master.level)
+  const audible = !master.muted && sequence.tracks.audio.enabled
+  const playback = usePlayback(sequence.clips, audible ? master.level : 0)
   const { playhead, duration, seek } = playback
   const flush = useAutosave(project.id, sequence)
   const exporter = useExport(project.id)
@@ -116,6 +117,8 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
   const split = () => edit({ type: 'split', time: playhead, newClipId: crypto.randomUUID() })
 
   function deleteSelection() {
+    const { tracks } = sequence
+    if (selection?.kind === 'overlay' ? tracks.overlays.locked : tracks.video.locked) return
     if (selection?.kind === 'clip') edit({ type: 'removeClip', clipId: selection.id })
     else if (selection?.kind === 'overlay') edit({ type: 'removeOverlay', overlayId: selection.id })
     else if (selection?.kind === 'gap') edit({ type: 'closeGap', clipId: selection.id })

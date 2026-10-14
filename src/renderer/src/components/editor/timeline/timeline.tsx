@@ -8,8 +8,19 @@ import {
   type PointerEvent,
   type ReactNode
 } from 'react'
-import { AudioWave01Icon, TextIcon, Video01Icon } from '@hugeicons/core-free-icons'
+import {
+  AudioWave01Icon,
+  SquareLock01Icon,
+  SquareUnlock01Icon,
+  TextIcon,
+  Video01Icon,
+  ViewIcon,
+  ViewOffSlashIcon,
+  VolumeHighIcon,
+  VolumeMute02Icon
+} from '@hugeicons/core-free-icons'
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
+import { IconButton } from '@/components/icon-button'
 import type { Edit } from '@/components/editor/editor'
 import { Panel } from '@/components/editor/panel'
 import { AudioRow } from '@/components/editor/timeline/audio-row'
@@ -33,6 +44,8 @@ import { useElementSize } from '@/hooks/use-element-size'
 import type { usePlayback } from '@/hooks/use-playback'
 import {
   clipStarts,
+  type Track,
+  type TrackId,
   type MediaId,
   type MediaItem,
   type Sequence
@@ -214,6 +227,11 @@ export function Timeline({
     else onDropMedia(item, { index: insertionIndex(clips, time) })
   }
 
+  const trackProps = {
+    tracks: sequence.tracks,
+    onTrack: (track: TrackId, change: Partial<Track>) => edit({ type: 'setTrack', track, change })
+  }
+
   const dropX =
     dropTarget?.kind === 'clip'
       ? (dropTarget.index < clips.length ? starts[dropTarget.index] : duration) * pps
@@ -241,7 +259,7 @@ export function Timeline({
           <Row icon={null} className="sticky top-0 z-20 bg-card">
             <Ruler pixelsPerSecond={pps} width={trackWidth} onScrub={scrub} />
           </Row>
-          <Row icon={TextIcon} label="Overlays">
+          <Row icon={TextIcon} label="Overlays" track="overlays" {...trackProps}>
             <OverlayRow
               overlays={overlays}
               mediaById={mediaById}
@@ -253,7 +271,7 @@ export function Timeline({
               edit={edit}
             />
           </Row>
-          <Row icon={Video01Icon} label="Video">
+          <Row icon={Video01Icon} label="Video" track="video" {...trackProps}>
             <VideoRow
               clips={clips}
               starts={starts}
@@ -270,7 +288,7 @@ export function Timeline({
               edit={edit}
             />
           </Row>
-          <Row icon={AudioWave01Icon} label="Audio">
+          <Row icon={AudioWave01Icon} label="Audio" track="audio" {...trackProps}>
             <AudioRow
               clips={clips}
               starts={starts}
@@ -326,21 +344,65 @@ export function Timeline({
 interface RowProps {
   icon: IconSvgElement | null
   label?: string
+  track?: TrackId
+  tracks?: Record<TrackId, Track>
+  onTrack?: (track: TrackId, change: Partial<Track>) => void
   className?: string
   children: ReactNode
 }
 
-function Row({ icon, label, className, children }: RowProps) {
+function Row({ icon, label, track, tracks, onTrack, className, children }: RowProps) {
+  const state = track && tracks?.[track]
+  const audio = track === 'audio'
   return (
     <div className={cn('flex', className)} style={{ marginTop: icon ? ROW_GAP : 0 }}>
       <div
-        className="sticky left-0 z-10 flex shrink-0 items-center gap-2 border-r bg-card px-3 text-xs text-muted-foreground"
+        className="sticky left-0 z-10 flex shrink-0 items-center gap-1.5 border-r bg-card pr-1 pl-3 text-xs text-muted-foreground"
         style={{ width: GUTTER }}
+        onPointerDown={(event) => event.stopPropagation()}
       >
         {icon && <HugeiconsIcon icon={icon} strokeWidth={1.6} className="size-4 shrink-0" />}
-        {label}
+        <span className={cn('min-w-0 flex-1 truncate', state && !state.enabled && 'opacity-50')}>
+          {label}
+        </span>
+        {track && state && onTrack && (
+          <>
+            <IconButton
+              icon={
+                audio
+                  ? state.enabled
+                    ? VolumeHighIcon
+                    : VolumeMute02Icon
+                  : state.enabled
+                    ? ViewIcon
+                    : ViewOffSlashIcon
+              }
+              label={`${audio ? (state.enabled ? 'Mute' : 'Unmute') : state.enabled ? 'Hide' : 'Show'} ${label?.toLowerCase()}`}
+              size="icon-xs"
+              aria-pressed={!state.enabled}
+              className={cn(!state.enabled && 'text-foreground')}
+              onClick={() => onTrack(track, { enabled: !state.enabled })}
+            />
+            <IconButton
+              icon={state.locked ? SquareLock01Icon : SquareUnlock01Icon}
+              label={`${state.locked ? 'Unlock' : 'Lock'} ${label?.toLowerCase()}`}
+              size="icon-xs"
+              aria-pressed={state.locked}
+              className={cn(state.locked && 'text-foreground')}
+              onClick={() => onTrack(track, { locked: !state.locked })}
+            />
+          </>
+        )}
       </div>
-      <div className="relative min-w-0 flex-1">{children}</div>
+      <div
+        className={cn(
+          'relative min-w-0 flex-1',
+          state?.locked && 'pointer-events-none',
+          state && (!state.enabled || state.locked) && 'opacity-50'
+        )}
+      >
+        {children}
+      </div>
     </div>
   )
 }

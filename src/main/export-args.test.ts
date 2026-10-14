@@ -123,7 +123,12 @@ describe('buildExportArgs', () => {
           start: 1,
           end: 5
         }
-      ]
+      ],
+      tracks: {
+        overlays: { enabled: true, locked: false },
+        video: { enabled: true, locked: false },
+        audio: { enabled: false, locked: false }
+      }
     } satisfies Sequence
 
     makeFile(
