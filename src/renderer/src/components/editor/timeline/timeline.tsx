@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
   type DragEvent,
@@ -27,6 +28,7 @@ import { OverlayRow } from '@/components/editor/timeline/overlay-row'
 import { Ruler } from '@/components/editor/timeline/ruler'
 import { Toolbar } from '@/components/editor/timeline/toolbar'
 import { VideoRow } from '@/components/editor/timeline/video-row'
+import { isTyping } from '@/hooks/use-editor-shortcuts'
 import { useElementSize } from '@/hooks/use-element-size'
 import type { usePlayback } from '@/hooks/use-playback'
 import {
@@ -45,6 +47,7 @@ const MAX_ZOOM_FACTOR = 64
 const EMPTY_PIXELS_PER_SECOND = 40
 const FOLLOW_MARGIN = 24
 const WHEEL_ZOOM_RATE = 0.002
+const ZOOM_STEP = 0.1
 
 interface TimelineProps {
   sequence: Sequence
@@ -82,6 +85,7 @@ export function Timeline({
   const [drag, setDrag] = useState<ClipDrag | null>(null)
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
   const [snapGuide, setSnapGuide] = useState<number | null>(null)
+  const [snapping, setSnapping] = useState(true)
   const { clips, overlays } = sequence
   const scrollerRef = useCallback(
     (element: HTMLDivElement | null) => {
@@ -112,6 +116,22 @@ export function Timeline({
       scroller.scrollLeft = keep.time * nextPps - keep.offset
     })
   }
+
+  const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    if (isTyping(event.target) || event.altKey || event.ctrlKey || event.metaKey) return
+    const key = event.key.toLowerCase()
+    if (key === '=' || key === '+') zoomTo(Math.min(zoom + ZOOM_STEP, 1))
+    else if (key === '-' || key === '_') zoomTo(Math.max(zoom - ZOOM_STEP, 0))
+    else if (key === 'z' && event.shiftKey) zoomTo(0)
+    else if (key === 'n') setSnapping((on) => !on)
+    else return
+    event.preventDefault()
+  })
+  useEffect(() => {
+    const listener = (event: KeyboardEvent) => onKeyDown(event)
+    window.addEventListener('keydown', listener)
+    return () => window.removeEventListener('keydown', listener)
+  }, [])
 
   const onWheel = useRef<(event: WheelEvent) => void>(() => {})
   useEffect(() => {
@@ -245,6 +265,7 @@ export function Timeline({
               onSelect={onSelect}
               onSeek={seekAt}
               playhead={playhead}
+              snapping={snapping}
               onSnapGuide={setSnapGuide}
               edit={edit}
             />
@@ -295,6 +316,8 @@ export function Timeline({
         canDuplicate={selection?.kind === 'clip'}
         zoom={zoom}
         onZoom={zoomTo}
+        snapping={snapping}
+        onSnapping={setSnapping}
       />
     </Panel>
   )

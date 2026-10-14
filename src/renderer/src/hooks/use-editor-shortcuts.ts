@@ -2,15 +2,18 @@ import { useEffect, useEffectEvent } from 'react'
 
 interface Commands {
   togglePlay: () => void
+  play: () => void
+  pause: () => void
   split: () => void
+  duplicate: () => void
   deleteSelection: () => void
   undo: () => void
   redo: () => void
-  step: (frames: number) => void
+  step: (amount: number, unit?: 'frame' | 'second') => void
   seek: (time: number) => void
 }
 
-const isTyping = (target: EventTarget | null) =>
+export const isTyping = (target: EventTarget | null) =>
   target instanceof Element && target.closest('input, textarea, [contenteditable="true"]') !== null
 
 export function useEditorShortcuts(commands: Commands) {
@@ -22,8 +25,12 @@ export function useEditorShortcuts(commands: Commands) {
       if (key === 'z' && event.shiftKey) commands.redo()
       else if (key === 'z') commands.undo()
       else if (key === 'y') commands.redo()
+      else if (key === 'd') commands.duplicate()
       else return
     } else if (key === ' ') commands.togglePlay()
+    else if (key === 'k') commands.pause()
+    else if (key === 'l') commands.play()
+    else if (key === 'j') commands.step(-1, 'second')
     else if (key === 'x' || key === 's') commands.split()
     else if (key === 'delete' || key === 'backspace') commands.deleteSelection()
     else if (key === 'arrowleft') commands.step(-1)
@@ -40,12 +47,19 @@ export function useEditorShortcuts(commands: Commands) {
   }, [])
 }
 
+const mac = navigator.platform.startsWith('Mac')
+
 export const SHORTCUTS = {
   play: 'Space',
   split: 'X',
   delete: 'Del',
-  undo: navigator.platform.startsWith('Mac') ? '⌘Z' : 'Ctrl+Z',
-  redo: navigator.platform.startsWith('Mac') ? '⇧⌘Z' : 'Ctrl+Y',
+  undo: mac ? '⌘Z' : 'Ctrl+Z',
+  redo: mac ? '⇧⌘Z' : 'Ctrl+Y',
+  duplicate: mac ? '⌘D' : 'Ctrl+D',
+  zoomIn: '=',
+  zoomOut: '-',
+  zoomFit: '⇧Z',
+  snap: 'N',
   start: 'Home',
   end: 'End'
 }

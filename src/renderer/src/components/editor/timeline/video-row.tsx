@@ -36,6 +36,7 @@ interface VideoRowProps {
   onSelect: (selection: Selection) => void
   onSeek: (clientX: number) => void
   playhead: number
+  snapping: boolean
   onSnapGuide: (time: number | null) => void
   edit: Edit
 }
@@ -51,6 +52,7 @@ export function VideoRow({
   onSelect,
   onSeek,
   playhead,
+  snapping,
   onSnapGuide,
   edit
 }: VideoRowProps) {
@@ -58,7 +60,7 @@ export function VideoRow({
     event.stopPropagation()
     onSelect({ kind: 'clip', id: clip.id })
     const length = timelineLength(clip)
-    const targets = snapEdges(clips, index, playhead)
+    const targets = snapping ? snapEdges(clips, index, playhead) : []
     let dragging = false
     let start = starts[index]
     trackPointer(
@@ -89,7 +91,7 @@ export function VideoRow({
     const mediaDuration = media?.kind === 'video' ? media.duration : clip.out
     const coalesce = crypto.randomUUID()
     const index = clips.indexOf(clip)
-    const targets = snapEdges(clips, index, playhead)
+    const targets = snapping ? snapEdges(clips, index, playhead) : []
     const edgeTime = starts[index] + (edge === 'in' ? 0 : timelineLength(clip))
     trackPointer(
       event,

@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react'
 import {
   Delete02Icon,
+  Magnet01Icon,
   RedoIcon,
   SearchAddIcon,
   SearchMinusIcon,
@@ -9,6 +10,7 @@ import {
 import { Slider } from '@/components/ui/slider'
 import { IconButton } from '@/components/icon-button'
 import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
+import { cn } from '@/lib/utils'
 
 interface ToolbarProps {
   duration: number
@@ -23,6 +25,8 @@ interface ToolbarProps {
   onDelete: () => void
   zoom: number
   onZoom: (zoom: number) => void
+  snapping: boolean
+  onSnapping: (snapping: boolean) => void
 }
 
 const ZOOM_STEP = 0.1
@@ -65,8 +69,18 @@ export function Toolbar(props: ToolbarProps) {
         />
         <div className="mx-2 h-4 w-px bg-border" />
         <IconButton
+          icon={Magnet01Icon}
+          label={props.snapping ? 'Snapping on' : 'Snapping off'}
+          shortcut={SHORTCUTS.snap}
+          aria-pressed={props.snapping}
+          className={cn(props.snapping && 'text-brand hover:text-brand')}
+          onClick={() => props.onSnapping(!props.snapping)}
+        />
+        <div className="mx-2 h-4 w-px bg-border" />
+        <IconButton
           icon={SearchMinusIcon}
           label="Zoom out"
+          shortcut={SHORTCUTS.zoomOut}
           onClick={() => onZoom(Math.max(zoom - ZOOM_STEP, 0))}
         />
         <Slider
@@ -80,6 +94,7 @@ export function Toolbar(props: ToolbarProps) {
         <IconButton
           icon={SearchAddIcon}
           label="Zoom in"
+          shortcut={SHORTCUTS.zoomIn}
           onClick={() => onZoom(Math.min(zoom + ZOOM_STEP, 1))}
         />
       </div>
@@ -91,7 +106,11 @@ export function Toolbar(props: ToolbarProps) {
         >
           Split
         </TextAction>
-        <TextAction disabled={!props.canDuplicate} onClick={props.onDuplicate}>
+        <TextAction
+          disabled={!props.canDuplicate}
+          onClick={props.onDuplicate}
+          title={`Duplicate (${SHORTCUTS.duplicate})`}
+        >
           Duplicate
         </TextAction>
       </div>

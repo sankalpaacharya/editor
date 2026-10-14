@@ -126,11 +126,15 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
 
   useEditorShortcuts({
     togglePlay: playback.toggle,
+    play: () => playback.playing || playback.toggle(),
+    pause: () => playback.playing && playback.toggle(),
     split,
+    duplicate,
     deleteSelection,
     undo,
     redo,
-    step: (frames) => seek(playhead + frames / sequence.format.fps),
+    step: (amount, unit = 'frame') =>
+      seek(playhead + (unit === 'frame' ? amount / sequence.format.fps : amount)),
     seek
   })
 
