@@ -6,7 +6,7 @@ import type { ProjectId } from '../shared/api'
 import { database, now, transaction } from './db'
 import { FFPROBE_PATH, run } from './ffmpeg'
 
-const EXTENSIONS: Record<MediaItem['kind'], string[]> = {
+export const EXTENSIONS: Record<MediaItem['kind'], string[]> = {
   video: ['mp4', 'mov', 'mkv', 'webm', 'm4v', 'avi'],
   image: ['png', 'jpg', 'jpeg', 'webp']
 }
@@ -72,12 +72,15 @@ export async function importMedia(
   projectId: ProjectId,
   paths: string[]
 ): Promise<{ imported: MediaItem[]; skipped: string[] }> {
-  const probes = await Promise.allSettled(paths.map((path) => probe(path)))
-  const skipped = paths
+  const existing = new Map(projectMedia(projectId).map((stored) => [stored.path, stored.item]))
+  const reused = paths.flatMap((path) => existing.get(resolve(path)) ?? [])
+  const fresh = paths.filter((path) => !existing.has(resolve(path)))
+  const probes = await Promise.allSettled(fresh.map((path) => probe(path)))
+  const skipped = fresh
     .filter((_path, i) => probes[i].status === 'rejected')
     .map((path) => basename(path))
   const found = probes.flatMap((result, i) =>
-    result.status === 'fulfilled' ? [{ item: result.value, path: resolve(paths[i]) }] : []
+    result.status === 'fulfilled' ? [{ item: result.value, path: resolve(fresh[i]) }] : []
   )
   transaction((db) => {
     const insert = db.prepare(
@@ -104,7 +107,7 @@ export async function importMedia(
       db.prepare('UPDATE projects SET updated_at = ? WHERE id = ?').run(now(), projectId)
     }
   })
-  return { imported: found.map(({ item }) => item), skipped }
+  return { imported: [...reused, ...found.map(({ item }) => item)], skipped }
 }
 
 interface MediaRow {

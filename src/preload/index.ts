@@ -9,7 +9,7 @@ const api: EditorApi = {
   deleteProject: (id) => ipcRenderer.invoke('projects:delete', id),
   saveSequence: (id, sequence) => ipcRenderer.invoke('projects:save-sequence', id, sequence),
 
-  importMedia: (id) => ipcRenderer.invoke('media:import', id),
+  importMedia: (id, kind) => ipcRenderer.invoke('media:import', id, kind),
   importMediaFiles: (id, files) =>
     ipcRenderer.invoke(
       'media:import-files',

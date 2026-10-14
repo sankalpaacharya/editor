@@ -5,7 +5,7 @@ import { mediaIdSchema, sequenceSchema, timelineDuration, type MediaItem } from 
 import type { ResolvedMedia } from './export-args'
 import { exportPath, listExports, recordExport } from './export-history'
 import { cancelExport, runExport } from './export-job'
-import { importMedia, MEDIA_EXTENSIONS, projectMedia } from './media'
+import { EXTENSIONS, importMedia, MEDIA_EXTENSIONS, projectMedia } from './media'
 import {
   checkReferences,
   createProject,
@@ -24,6 +24,7 @@ const projectIdSchema = z.number().int().positive()
 const projectNameSchema = z.string().trim().min(1).max(120)
 const exportIdSchema = z.number().int().positive()
 const pathsSchema = z.array(z.string().min(1))
+const mediaKindSchema = z.enum(['video', 'image'])
 
 function windowOf(event: IpcMainInvokeEvent): BrowserWindow {
   const window = BrowserWindow.fromWebContents(event.sender)
@@ -89,12 +90,17 @@ export function registerIpc(): void {
     saveSequence(projectIdSchema.parse(id), sequenceSchema.parse(sequence))
   )
 
-  ipcMain.handle('media:import', async (event, id: unknown) => {
+  ipcMain.handle('media:import', async (event, id: unknown, kind: unknown) => {
     const project = projectIdSchema.parse(id)
+    const only = mediaKindSchema.optional().parse(kind)
     requireProject(project)
     const { canceled, filePaths } = await dialog.showOpenDialog(windowOf(event), {
       properties: ['openFile', 'multiSelections'],
-      filters: [{ name: 'Videos and images', extensions: MEDIA_EXTENSIONS }]
+      filters: [
+        only
+          ? { name: only === 'video' ? 'Videos' : 'Images', extensions: EXTENSIONS[only] }
+          : { name: 'Videos and images', extensions: MEDIA_EXTENSIONS }
+      ]
     })
     return canceled ? [] : importInto(event, project, filePaths)
   })

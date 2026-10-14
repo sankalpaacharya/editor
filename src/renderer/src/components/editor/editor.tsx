@@ -1,5 +1,5 @@
 import { useMemo, useReducer, useState } from 'react'
-import { Folder01Icon, Image01Icon, TextIcon } from '@hugeicons/core-free-icons'
+import { Folder01Icon, Image01Icon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { Rail } from '@/components/rail'
 import { EditorHeader } from '@/components/editor/header'
@@ -7,7 +7,7 @@ import { ExportDialog } from '@/components/editor/export-dialog'
 import { Inspector } from '@/components/editor/inspector/inspector'
 import { MediaPanel } from '@/components/editor/media-panel'
 import { Preview } from '@/components/editor/preview'
-import { TextPanel } from '@/components/editor/text-panel'
+import { InsertBar } from '@/components/editor/insert-bar'
 import { Timeline } from '@/components/editor/timeline/timeline'
 import { useAutosave } from '@/hooks/use-autosave'
 import { useEditorShortcuts } from '@/hooks/use-editor-shortcuts'
@@ -24,8 +24,6 @@ import { cn } from '@/lib/utils'
 
 export type Edit = (action: SequenceAction, coalesce?: string) => void
 
-type Panel = 'media' | 'text'
-
 export interface MasterVolume {
   level: number
   muted: boolean
@@ -38,7 +36,6 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
   const [media, setMedia] = useState<MediaItem[]>(project.media)
   const [missing, setMissing] = useState<ReadonlySet<MediaId>>(new Set(project.missingMedia))
   const [selection, setSelection] = useState<Selection>(null)
-  const [panel, setPanel] = useState<Panel>('media')
   const [master, setMaster] = useState<MasterVolume>({ level: 1, muted: false })
   const playback = usePlayback(sequence.clips, master.muted ? 0 : master.level)
   const { playhead, duration, seek } = playback
@@ -57,13 +54,18 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
   }
 
   const addImported = (items: MediaItem[]) => {
-    setMedia((current) => [...current, ...items])
+    setMedia((current) => [
+      ...current,
+      ...items.filter((item) => !current.some((known) => known.id === item.id))
+    ])
     setMissing((current) => new Set([...current].filter((id) => !items.some((i) => i.id === id))))
   }
-  const importMedia = () =>
-    guard('Could not import media', async () =>
-      addImported(await window.editor.importMedia(project.id))
-    )
+  const importMedia = (kind?: MediaItem['kind'], insert = false) =>
+    guard('Could not import media', async () => {
+      const items = await window.editor.importMedia(project.id, kind)
+      addImported(items)
+      if (insert) items.forEach((item) => addMedia(item))
+    })
   const [dropping, dropProps] = useFileDrop((files) =>
     guard('Could not import files', async () =>
       addImported(await window.editor.importMediaFiles(project.id, files))
@@ -151,14 +153,8 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
             {
               label: 'Media',
               icon: Image01Icon,
-              active: panel === 'media',
-              onSelect: () => setPanel('media')
-            },
-            {
-              label: 'Text',
-              icon: TextIcon,
-              active: panel === 'text',
-              onSelect: () => setPanel('text')
+              active: true,
+              onSelect() {}
             }
           ]
         ]}
@@ -170,20 +166,23 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
           onRename={rename}
           canExport={sequence.clips.length > 0 && exporter.state.status === 'idle'}
           onExport={() => exporter.start(sequence)}
-        />
+        >
+          <InsertBar
+            canOverlay={duration > 0}
+            onVideo={() => importMedia('video', true)}
+            onImage={() => importMedia('image', true)}
+            onText={addText}
+          />
+        </EditorHeader>
         <div className="flex min-h-0 flex-1 gap-2">
-          {panel === 'media' ? (
-            <MediaPanel
-              media={media}
-              missing={missing}
-              sequence={sequence}
-              onImport={importMedia}
-              onAdd={(item) => addMedia(item)}
-              onRemove={removeMedia}
-            />
-          ) : (
-            <TextPanel disabled={duration === 0} onAdd={addText} />
-          )}
+          <MediaPanel
+            media={media}
+            missing={missing}
+            sequence={sequence}
+            onImport={() => importMedia()}
+            onAdd={(item) => addMedia(item)}
+            onRemove={removeMedia}
+          />
           <Preview
             sequence={sequence}
             mediaById={mediaById}

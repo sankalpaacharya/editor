@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { ArrowLeft01Icon, Upload04Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@/components/ui/button'
@@ -10,9 +10,17 @@ interface EditorHeaderProps {
   onRename: (name: string) => void
   canExport: boolean
   onExport: () => void
+  children?: ReactNode
 }
 
-export function EditorHeader({ name, onBack, onRename, canExport, onExport }: EditorHeaderProps) {
+export function EditorHeader({
+  name,
+  onBack,
+  onRename,
+  canExport,
+  onExport,
+  children
+}: EditorHeaderProps) {
   const [draft, setDraft] = useState<string | null>(null)
 
   function commit() {
@@ -22,9 +30,9 @@ export function EditorHeader({ name, onBack, onRename, canExport, onExport }: Ed
   }
 
   return (
-    <header className="flex h-10 shrink-0 items-center gap-1">
-      <IconButton icon={ArrowLeft01Icon} label="Back to projects" onClick={onBack} />
+    <header className="grid h-10 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2">
       <nav className="flex min-w-0 items-center gap-1.5 text-sm">
+        <IconButton icon={ArrowLeft01Icon} label="Back to projects" onClick={onBack} />
         <button
           type="button"
           onClick={onBack}
@@ -59,12 +67,13 @@ export function EditorHeader({ name, onBack, onRename, canExport, onExport }: Ed
           />
         )}
       </nav>
+      {children ?? <span />}
       <Button
         variant="brand"
         size="sm"
         onClick={onExport}
         disabled={!canExport}
-        className="ml-auto h-8 px-4"
+        className="h-8 justify-self-end px-4"
       >
         <HugeiconsIcon icon={Upload04Icon} strokeWidth={1.75} />
         Export

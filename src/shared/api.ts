@@ -39,7 +39,7 @@ export interface EditorApi {
   deleteProject(id: ProjectId): Promise<void>
   saveSequence(id: ProjectId, sequence: Sequence): Promise<void>
 
-  importMedia(id: ProjectId): Promise<MediaItem[]>
+  importMedia(id: ProjectId, kind?: MediaItem['kind']): Promise<MediaItem[]>
   importMediaFiles(id: ProjectId, files: File[]): Promise<MediaItem[]>
   removeMedia(id: ProjectId, mediaId: MediaId): Promise<void>
 
