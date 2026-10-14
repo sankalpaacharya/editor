@@ -22,6 +22,7 @@ import type { Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
 
 const DRAG_THRESHOLD = 3
+const SNAP_PIXELS = 10
 
 interface VideoRowProps {
   clips: readonly Clip[]
@@ -61,9 +62,12 @@ export function VideoRow({
       (end, dx) => {
         onDrag(null)
         if (!dragging) return onSeek(end.clientX)
-        const center = starts[index] + timelineLength(clip) / 2 + dx / pps
-        const toIndex = insertionIndex(clips, center, index)
-        if (toIndex !== index) edit({ type: 'moveClip', clipId: clip.id, toIndex })
+        const start = starts[index] + dx / pps
+        const toIndex = insertionIndex(clips, start + timelineLength(clip) / 2, index)
+        if (toIndex !== index) return edit({ type: 'moveClip', clipId: clip.id, toIndex })
+        const previousEnd = starts[index] - clip.gap
+        const snapped = Math.abs(start - previousEnd) * pps < SNAP_PIXELS ? previousEnd : start
+        edit({ type: 'placeClip', clipId: clip.id, start: snapped })
       }
     )
   }

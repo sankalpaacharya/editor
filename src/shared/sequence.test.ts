@@ -61,6 +61,11 @@ describe('editSequence', () => {
     expect(trim('b', { in: 0, out: 4 }, B.duration)).toEqual([2, 10])
     expect(trim('a', { in: 2, out: 10 }, A.duration)).toEqual([2, 10])
     expect(sequence.clips.map((clip) => clip.gap)).toEqual([2, 0])
+
+    sequence = editSequence(sequence, { type: 'placeClip', clipId: 'a', start: 0 })
+    expect(clipStarts(sequence.clips)).toEqual([0, 10])
+    sequence = editSequence(sequence, { type: 'placeClip', clipId: 'a', start: 5 })
+    expect(clipStarts(sequence.clips)).toEqual([2, 10])
   })
 
   it('reorders clips and drops every use of removed media', () => {

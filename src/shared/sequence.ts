@@ -155,6 +155,7 @@ export type SequenceAction =
   | { type: 'removeClip'; clipId: string }
   | { type: 'duplicateClip'; clipId: string; newClipId: string }
   | { type: 'moveClip'; clipId: string; toIndex: number }
+  | { type: 'placeClip'; clipId: string; start: number }
   | { type: 'addOverlay'; overlay: Overlay }
   | { type: 'updateOverlay'; overlay: Overlay }
   | { type: 'removeOverlay'; overlayId: string }
@@ -248,6 +249,22 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
         .toSpliced(from, 1)
         .toSpliced(to, 0, { ...sequence.clips[from], gap: 0 })
       return { ...sequence, clips }
+    }
+    case 'placeClip': {
+      // Slides a clip between its neighbours without reordering, trading gap before for gap after.
+      const index = sequence.clips.findIndex((clip) => clip.id === action.clipId)
+      if (index === -1) return sequence
+      const clip = sequence.clips[index]
+      const start = clipStarts(sequence.clips)[index]
+      const previousEnd = start - clip.gap
+      const next = sequence.clips[index + 1]
+      const latest = next ? start + next.gap : Infinity
+      const gap = clamp(action.start - previousEnd, 0, latest - start + clip.gap)
+      const clips = withGap(sequence.clips, index, gap)
+      return {
+        ...sequence,
+        clips: next ? withGap(clips, index + 1, next.gap + clip.gap - gap) : clips
+      }
     }
     case 'addOverlay':
       return { ...sequence, overlays: [...sequence.overlays, action.overlay] }
