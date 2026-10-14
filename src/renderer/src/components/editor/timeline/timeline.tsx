@@ -116,7 +116,13 @@ export function Timeline({
   )
 
   const trackViewport = Math.max(viewport.width - GUTTER, 0)
-  const fit = duration > 0 ? Math.floor(trackViewport - TAIL) / duration : EMPTY_PIXELS_PER_SECOND
+  // The scale fits the length the timeline had when it was last fitted, so editing the length
+  // doesn't rescale every clip under the pointer. Zooming all the way out fits it again.
+  const [fitDuration, setFitDuration] = useState(duration)
+  if (fitDuration === 0 && duration > 0) setFitDuration(duration)
+  const fitFor = (length: number) =>
+    length > 0 ? Math.floor(trackViewport - TAIL) / length : EMPTY_PIXELS_PER_SECOND
+  const fit = fitFor(fitDuration)
   const pps = Math.max(fit, 1) * MAX_ZOOM_FACTOR ** zoom
   const trackWidth = Math.max(Math.ceil(duration * pps) + TAIL, Math.floor(trackViewport))
   const starts = clipStarts(clips)
@@ -124,6 +130,8 @@ export function Timeline({
   function zoomTo(next: number, anchor?: { time: number; offset: number }) {
     const scroller = scrollRef.current
     setZoom(next)
+    const refit = next === 0 && fitDuration !== duration
+    if (refit) setFitDuration(duration)
     if (!scroller) return
     const visible = scroller.clientWidth - GUTTER
     const offset = playhead * pps - scroller.scrollLeft
@@ -131,7 +139,7 @@ export function Timeline({
       time: playhead,
       offset: offset >= 0 && offset <= visible ? offset : visible / 2
     }
-    const nextPps = Math.max(fit, 1) * MAX_ZOOM_FACTOR ** next
+    const nextPps = Math.max(refit ? fitFor(duration) : fit, 1) * MAX_ZOOM_FACTOR ** next
     requestAnimationFrame(() => {
       scroller.scrollLeft = keep.time * nextPps - keep.offset
     })

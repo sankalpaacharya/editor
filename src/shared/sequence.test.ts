@@ -62,19 +62,45 @@ describe('editSequence', () => {
     expect(trim('a', { in: 2, out: 10 }, A.duration)).toEqual([2, 10])
     expect(sequence.clips.map((clip) => clip.gap)).toEqual([2, 0])
 
-    sequence = editSequence(sequence, { type: 'placeClip', clipId: 'a', start: 0 })
-    expect(clipStarts(sequence.clips)).toEqual([0, 10])
-    sequence = editSequence(sequence, { type: 'placeClip', clipId: 'a', start: 5 })
-    expect(clipStarts(sequence.clips)).toEqual([2, 10])
-
     sequence = editSequence(sequence, { type: 'closeGap', clipId: 'a' })
     expect(clipStarts(sequence.clips)).toEqual([0, 8])
+  })
+
+  it('drops a moved clip where it is released and only pushes clips it would overlap', () => {
+    let sequence = editSequence(emptySequence(), { type: 'addClip', clipId: 'a', media: A })
+    sequence = editSequence(sequence, { type: 'addClip', clipId: 'b', media: B })
+    sequence = editSequence(sequence, { type: 'addClip', clipId: 'c', media: B })
+    const move = (clipId: string, start: number) => {
+      sequence = editSequence(sequence, { type: 'moveClip', clipId, start })
+      return sequence.clips.map((clip, index) => [clip.id, clipStarts(sequence.clips)[index]])
+    }
+
+    expect(move('b', 20)).toEqual([
+      ['a', 0],
+      ['c', 14],
+      ['b', 20]
+    ])
+    expect(move('a', 30)).toEqual([
+      ['c', 14],
+      ['b', 20],
+      ['a', 30]
+    ])
+    expect(move('a', 16)).toEqual([
+      ['c', 14],
+      ['a', 18],
+      ['b', 28]
+    ])
+    expect(move('b', 19)).toEqual([
+      ['c', 14],
+      ['b', 18],
+      ['a', 22]
+    ])
   })
 
   it('reorders clips and drops every use of removed media', () => {
     let sequence = editSequence(emptySequence(), { type: 'addClip', clipId: 'a', media: A })
     sequence = editSequence(sequence, { type: 'addClip', clipId: 'b', media: B })
-    sequence = editSequence(sequence, { type: 'moveClip', clipId: 'b', toIndex: 0 })
+    sequence = editSequence(sequence, { type: 'moveClip', clipId: 'b', start: 0 })
     expect(sequence.clips.map((clip) => clip.id)).toEqual(['b', 'a'])
 
     sequence = editSequence(sequence, { type: 'duplicateClip', clipId: 'b', newClipId: 'c' })

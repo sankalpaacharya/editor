@@ -4,7 +4,6 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import type { Edit } from '@/components/editor/editor'
 import {
   clipBox,
-  insertionIndex,
   snapEdges,
   snapShift,
   VIDEO_ROW_HEIGHT,
@@ -78,9 +77,7 @@ export function VideoRow({
         onDrag(null)
         onSnapGuide(null)
         if (!dragging) return onSeek(end.clientX)
-        const toIndex = insertionIndex(clips, start + length / 2, index)
-        if (toIndex !== index) return edit({ type: 'moveClip', clipId: clip.id, toIndex })
-        edit({ type: 'placeClip', clipId: clip.id, start })
+        edit({ type: 'moveClip', clipId: clip.id, start })
       }
     )
   }

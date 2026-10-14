@@ -157,6 +157,16 @@ export function locate(clips: readonly Clip[], time: number): TimelinePosition |
   return null
 }
 
+// Lays clips out at the given starts in order, pushing any clip that would overlap the one before.
+function fromStarts(placed: readonly { clip: Clip; start: number }[]): Clip[] {
+  let end = 0
+  return placed.map(({ clip, start }) => {
+    const gap = Math.max(start - end, 0)
+    end += gap + timelineLength(clip)
+    return { ...clip, gap }
+  })
+}
+
 function withGap(clips: readonly Clip[], index: number, gap: number): Clip[] {
   const clip = clips[index]
   return clip ? clips.toSpliced(index, 1, { ...clip, gap: Math.max(gap, 0) }) : [...clips]
@@ -170,8 +180,7 @@ export type SequenceAction =
   | { type: 'setVolume'; clipId: string; volume: number }
   | { type: 'removeClip'; clipId: string }
   | { type: 'duplicateClip'; clipId: string; newClipId: string }
-  | { type: 'moveClip'; clipId: string; toIndex: number }
-  | { type: 'placeClip'; clipId: string; start: number }
+  | { type: 'moveClip'; clipId: string; start: number }
   | { type: 'closeGap'; clipId: string }
   | { type: 'setTrack'; track: TrackId; change: Partial<Track> }
   | { type: 'addOverlay'; overlay: Overlay }
@@ -260,29 +269,27 @@ export function editSequence(sequence: Sequence, action: SequenceAction): Sequen
       return { ...sequence, clips: sequence.clips.toSpliced(index + 1, 0, copy) }
     }
     case 'moveClip': {
+      // Drops the clip at the requested time. Every other clip keeps its place unless the
+      // dropped clip would overlap it, in which case it and the clips after it shift right.
       const from = sequence.clips.findIndex((clip) => clip.id === action.clipId)
       if (from === -1) return sequence
-      const to = clamp(action.toIndex, 0, sequence.clips.length - 1)
-      const clips = sequence.clips
-        .toSpliced(from, 1)
-        .toSpliced(to, 0, { ...sequence.clips[from], gap: 0 })
-      return { ...sequence, clips }
-    }
-    case 'placeClip': {
-      // Slides a clip between its neighbours without reordering, trading gap before for gap after.
-      const index = sequence.clips.findIndex((clip) => clip.id === action.clipId)
-      if (index === -1) return sequence
-      const clip = sequence.clips[index]
-      const start = clipStarts(sequence.clips)[index]
-      const previousEnd = start - clip.gap
-      const next = sequence.clips[index + 1]
-      const latest = next ? start + next.gap : Infinity
-      const gap = clamp(action.start - previousEnd, 0, latest - start + clip.gap)
-      const clips = withGap(sequence.clips, index, gap)
-      return {
-        ...sequence,
-        clips: next ? withGap(clips, index + 1, next.gap + clip.gap - gap) : clips
-      }
+      const moved = sequence.clips[from]
+      const length = timelineLength(moved)
+      const starts = clipStarts(sequence.clips)
+      const others = sequence.clips
+        .map((clip, index) => ({ clip, start: starts[index] }))
+        .filter((_, index) => index !== from)
+      const center = action.start + length / 2
+      const to = others.filter(
+        ({ clip, start }) => start + timelineLength(clip) / 2 < center
+      ).length
+      // Dropping onto a clip inserts at its edge rather than shoving it part of the way.
+      const previous = others[to - 1]
+      const previousEnd = previous ? previous.start + timelineLength(previous.clip) : 0
+      const nextStart = others[to]?.start ?? Number.POSITIVE_INFINITY
+      const start = Math.max(Math.min(action.start, nextStart), previousEnd)
+      const placed = others.toSpliced(to, 0, { clip: moved, start })
+      return { ...sequence, clips: fromStarts(placed) }
     }
     case 'closeGap': {
       const index = sequence.clips.findIndex((clip) => clip.id === action.clipId)
