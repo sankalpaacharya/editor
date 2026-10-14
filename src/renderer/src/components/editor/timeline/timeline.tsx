@@ -23,6 +23,8 @@ import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 import { IconButton } from '@/components/icon-button'
 import type { Edit } from '@/components/editor/editor'
 import { Panel } from '@/components/editor/panel'
+import { ProgramMeter } from '@/components/editor/timeline/program-meter'
+import type { FrameSource, MeterFrame } from '@/lib/audio/types'
 import { AudioRow } from '@/components/editor/timeline/audio-row'
 import {
   AUDIO_ROW_HEIGHT,
@@ -64,6 +66,7 @@ const WHEEL_ZOOM_RATE = 0.002
 const ZOOM_STEP = 0.1
 
 interface TimelineProps {
+  meter: FrameSource<MeterFrame>
   sequence: Sequence
   mediaById: ReadonlyMap<MediaId, MediaItem>
   playback: ReturnType<typeof usePlayback>
@@ -81,6 +84,7 @@ interface TimelineProps {
 type DropTarget = { kind: 'clip'; index: number } | { kind: 'overlay'; time: number }
 
 export function Timeline({
+  meter,
   sequence,
   mediaById,
   playback,
@@ -130,12 +134,13 @@ export function Timeline({
   }
 
   const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    if (isTyping(event.target) || event.altKey || event.ctrlKey || event.metaKey) return
+    if (isTyping(event.target) || event.altKey) return
+    const command = event.ctrlKey || event.metaKey
     const key = event.key.toLowerCase()
     if (key === '=' || key === '+') zoomTo(Math.min(zoom + ZOOM_STEP, 1))
     else if (key === '-' || key === '_') zoomTo(Math.max(zoom - ZOOM_STEP, 0))
-    else if (key === 'z' && event.shiftKey) zoomTo(0)
-    else if (key === 'n') setSnapping((on) => !on)
+    else if ((key === 'z' && event.shiftKey && !command) || (key === '0' && command)) zoomTo(0)
+    else if (key === 'n' && !command) setSnapping((on) => !on)
     else return
     event.preventDefault()
   })
@@ -240,96 +245,103 @@ export function Timeline({
 
   return (
     <Panel className="h-[300px] shrink-0">
-      <div
-        ref={scrollerRef}
-        onPointerDown={pressTracks}
-        onDragOver={(event) => {
-          if (!isMediaDrag(event)) return
-          event.preventDefault()
-          setDropTarget(targetFor(event))
-        }}
-        onDragLeave={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDropTarget(null)
-        }}
-        onDrop={drop}
-        className="relative min-h-0 flex-1 overflow-x-auto overflow-y-auto overscroll-x-contain"
-      >
-        <div className="relative pb-2" style={{ width: GUTTER + trackWidth }}>
-          <Row icon={null} className="sticky top-0 z-20 bg-card">
-            <Ruler pixelsPerSecond={pps} width={trackWidth} onScrub={scrub} />
-          </Row>
-          <Row icon={TextIcon} label="Overlays" track="overlays" {...trackProps}>
-            <OverlayRow
-              overlays={overlays}
-              mediaById={mediaById}
-              pixelsPerSecond={pps}
-              duration={duration}
-              selection={selection}
-              onSelect={onSelect}
-              onSeek={seekAt}
-              edit={edit}
-            />
-          </Row>
-          <Row icon={Video01Icon} label="Video" track="video" {...trackProps}>
-            <VideoRow
-              clips={clips}
-              starts={starts}
-              mediaById={mediaById}
-              pixelsPerSecond={pps}
-              selection={selection}
-              drag={drag}
-              onDrag={setDrag}
-              onSelect={onSelect}
-              onSeek={seekAt}
-              playhead={playhead}
-              snapping={snapping}
-              onSnapGuide={setSnapGuide}
-              edit={edit}
-            />
-          </Row>
-          <div className="flex items-center" style={{ height: GROUP_GAP - ROW_GAP }}>
-            <div className="sticky left-0 z-10 h-full shrink-0 bg-card" style={{ width: GUTTER }} />
-            <div className="h-px flex-1 bg-border" />
+      <div className="flex min-h-0 flex-1">
+        <div
+          ref={scrollerRef}
+          onPointerDown={pressTracks}
+          onDragOver={(event) => {
+            if (!isMediaDrag(event)) return
+            event.preventDefault()
+            setDropTarget(targetFor(event))
+          }}
+          onDragLeave={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null))
+              setDropTarget(null)
+          }}
+          onDrop={drop}
+          className="relative min-h-0 flex-1 overflow-x-auto overflow-y-auto overscroll-x-contain"
+        >
+          <div className="relative pb-2" style={{ width: GUTTER + trackWidth }}>
+            <Row icon={null} className="sticky top-0 z-20 bg-card">
+              <Ruler pixelsPerSecond={pps} width={trackWidth} onScrub={scrub} />
+            </Row>
+            <Row icon={TextIcon} label="Overlays" track="overlays" {...trackProps}>
+              <OverlayRow
+                overlays={overlays}
+                mediaById={mediaById}
+                pixelsPerSecond={pps}
+                duration={duration}
+                selection={selection}
+                onSelect={onSelect}
+                onSeek={seekAt}
+                edit={edit}
+              />
+            </Row>
+            <Row icon={Video01Icon} label="Video" track="video" {...trackProps}>
+              <VideoRow
+                clips={clips}
+                starts={starts}
+                mediaById={mediaById}
+                pixelsPerSecond={pps}
+                selection={selection}
+                drag={drag}
+                onDrag={setDrag}
+                onSelect={onSelect}
+                onSeek={seekAt}
+                playhead={playhead}
+                snapping={snapping}
+                onSnapGuide={setSnapGuide}
+                edit={edit}
+              />
+            </Row>
+            <div className="flex items-center" style={{ height: GROUP_GAP - ROW_GAP }}>
+              <div
+                className="sticky left-0 z-10 h-full shrink-0 bg-card"
+                style={{ width: GUTTER }}
+              />
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <Row icon={AudioWave01Icon} label="Audio" track="audio" {...trackProps}>
+              <AudioRow
+                clips={clips}
+                starts={starts}
+                mediaById={mediaById}
+                pixelsPerSecond={pps}
+                selection={selection}
+                drag={drag}
+                onSelect={onSelect}
+                onSeek={seekAt}
+              />
+            </Row>
+            {dropX !== null && (
+              <div
+                className="pointer-events-none absolute bottom-2 z-10 w-0.5 -translate-x-1/2 rounded-full bg-brand/80"
+                style={{ left: GUTTER + dropX, top: RULER_HEIGHT }}
+              />
+            )}
+            {snapGuide !== null && (
+              <div
+                className="pointer-events-none absolute bottom-2 z-20 w-px -translate-x-1/2 bg-selection"
+                style={{ left: GUTTER + snapGuide * pps, top: RULER_HEIGHT }}
+              />
+            )}
+            {duration > 0 && (
+              <Playhead
+                x={GUTTER + playhead * pps}
+                height={
+                  RULER_HEIGHT +
+                  overlayLayout(overlays).rowHeight +
+                  VIDEO_ROW_HEIGHT +
+                  AUDIO_ROW_HEIGHT +
+                  ROW_GAP * 2 +
+                  GROUP_GAP
+                }
+                onScrub={scrub}
+              />
+            )}
           </div>
-          <Row icon={AudioWave01Icon} label="Audio" track="audio" {...trackProps}>
-            <AudioRow
-              clips={clips}
-              starts={starts}
-              mediaById={mediaById}
-              pixelsPerSecond={pps}
-              selection={selection}
-              drag={drag}
-              onSelect={onSelect}
-              onSeek={seekAt}
-            />
-          </Row>
-          {dropX !== null && (
-            <div
-              className="pointer-events-none absolute bottom-2 z-10 w-0.5 -translate-x-1/2 rounded-full bg-brand/80"
-              style={{ left: GUTTER + dropX, top: RULER_HEIGHT }}
-            />
-          )}
-          {snapGuide !== null && (
-            <div
-              className="pointer-events-none absolute bottom-2 z-20 w-px -translate-x-1/2 bg-selection"
-              style={{ left: GUTTER + snapGuide * pps, top: RULER_HEIGHT }}
-            />
-          )}
-          {duration > 0 && (
-            <Playhead
-              x={GUTTER + playhead * pps}
-              height={
-                RULER_HEIGHT +
-                overlayLayout(overlays).rowHeight +
-                VIDEO_ROW_HEIGHT +
-                AUDIO_ROW_HEIGHT +
-                ROW_GAP * 2 +
-                GROUP_GAP
-              }
-              onScrub={scrub}
-            />
-          )}
         </div>
+        <ProgramMeter source={meter} />
       </div>
       <Toolbar
         {...toolbar}

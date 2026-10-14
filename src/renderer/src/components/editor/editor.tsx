@@ -1,4 +1,4 @@
-import { useMemo, useReducer, useState } from 'react'
+import { useCallback, useMemo, useReducer, useState } from 'react'
 import { Folder01Icon, Image01Icon, TextIcon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { Rail } from '@/components/rail'
@@ -19,6 +19,7 @@ import type { OpenProject } from '../../../../shared/api'
 import type { ImageMedia, MediaId, MediaItem, SequenceAction } from '../../../../shared/sequence'
 import { errorMessage } from '@/lib/format'
 import { historyReducer, initialHistory } from '@/lib/history'
+import { createProgramMeter } from '@/lib/program-meter'
 import { newImageOverlay, newTextOverlay, TEXT_PRESETS, type TextPreset } from '@/lib/overlays'
 import { nextSelection, onlySelected, type Select, type Selection } from '@/lib/selection'
 import { cn } from '@/lib/utils'
@@ -46,6 +47,15 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
   const { playhead, duration, seek } = playback
   const flush = useAutosave(project.id, sequence)
   const exporter = useExport(project.id)
+  const meter = useMemo(createProgramMeter, [])
+  const { registerVideo } = playback
+  const registerMeteredVideo = useCallback(
+    (id: MediaId, video: HTMLVideoElement | null) => {
+      if (video) meter.attach(video)
+      registerVideo(id, video)
+    },
+    [meter, registerVideo]
+  )
   const mediaById = useMemo(() => new Map(media.map((item) => [item.id, item])), [media])
 
   const edit: Edit = (action, coalesce) => dispatch({ type: 'edit', action, coalesce })
@@ -220,7 +230,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
             mediaById={mediaById}
             playhead={playhead}
             activeMediaId={playback.activeMediaId}
-            registerVideo={playback.registerVideo}
+            registerVideo={registerMeteredVideo}
             selection={selection}
             onSelect={select}
             edit={edit}
@@ -249,6 +259,7 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
           />
         </div>
         <Timeline
+          meter={meter.source}
           sequence={sequence}
           mediaById={mediaById}
           playback={playback}

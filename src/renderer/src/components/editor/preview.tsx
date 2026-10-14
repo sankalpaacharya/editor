@@ -204,6 +204,7 @@ function PreviewVideo({ id, visible, registerVideo }: PreviewVideoProps) {
   return (
     <video
       ref={ref}
+      crossOrigin="anonymous"
       src={mediaUrl.source(id)}
       preload="auto"
       className={cn('absolute inset-0 size-full object-contain', !visible && 'invisible')}
