@@ -12,7 +12,7 @@
     "build": "pnpm typecheck && electron-vite build",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "lint": "oxlint --max-warnings 0",
+    "lint": "oxlint --max-warnings 0 && node scripts/check-design-tokens.mjs",
     "format": "prettier --write .",
     "test": "vitest run",
     "dist": "pnpm build && electron-builder",
