@@ -2,7 +2,8 @@ import { Delete02Icon } from '@hugeicons/core-free-icons'
 import { IconButton } from '@/components/icon-button'
 import type { Edit } from '@/components/editor/editor'
 import { Panel } from '@/components/editor/panel'
-import { ClipInspector } from '@/components/editor/inspector/clip-inspector'
+import { useState } from 'react'
+import { ClipInspector, ClipTabs, type ClipTab } from '@/components/editor/inspector/clip-inspector'
 import { ImageInspector, TextInspector } from '@/components/editor/inspector/overlay-inspector'
 import { ExportHistory } from '@/components/editor/inspector/export-history'
 import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
@@ -38,7 +39,16 @@ export function Inspector({
   const updateOverlay = (next: Overlay, coalesce?: string) =>
     edit({ type: 'updateOverlay', overlay: next }, coalesce)
 
-  const title = clip ? 'Clip' : overlay?.kind === 'text' ? 'Text' : overlay ? 'Image' : 'Project'
+  const [clipTab, setClipTab] = useState<ClipTab>('speed')
+  const title = clip ? (
+    <ClipTabs tab={clipTab} onTab={setClipTab} />
+  ) : overlay?.kind === 'text' ? (
+    'Text'
+  ) : overlay ? (
+    'Image'
+  ) : (
+    'Project'
+  )
   const image = overlay?.kind === 'image' ? mediaById.get(overlay.mediaId) : undefined
 
   return (
@@ -59,7 +69,7 @@ export function Inspector({
     >
       <div className="min-h-0 flex-1 overflow-y-auto">
         {clip ? (
-          <ClipInspector key={clip.id} clip={clip} edit={edit} />
+          <ClipInspector key={clip.id} clip={clip} tab={clipTab} edit={edit} />
         ) : overlay?.kind === 'text' ? (
           <TextInspector
             key={overlay.id}
