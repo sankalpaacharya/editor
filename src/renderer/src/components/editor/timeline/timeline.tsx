@@ -55,7 +55,7 @@ import {
 } from '../../../../../shared/sequence'
 import { draggedMediaId, isImageDrag, isMediaDrag } from '@/lib/media-drag'
 import { trackPointer } from '@/lib/pointer'
-import { isAdditive, type Select, type Selection } from '@/lib/selection'
+import { isAdditive, onlySelected, type Select, type Selection } from '@/lib/selection'
 import { clamp } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -76,6 +76,10 @@ interface TimelineProps {
   canUndo: boolean
   canRedo: boolean
   onUndo: () => void
+  onSplit: () => void
+  onTrimLeft: () => void
+  onTrimRight: () => void
+  onDuplicate: () => void
   onRedo: () => void
   onDelete: () => void
   onDropMedia: (item: MediaItem, at: { index?: number; time?: number }) => void
@@ -245,6 +249,16 @@ export function Timeline({
 
   return (
     <Panel className="h-[300px] shrink-0">
+      <Toolbar
+        {...toolbar}
+        canDelete={selection.length > 0}
+        canEdit={duration > 0}
+        canDuplicate={onlySelected(selection)?.kind === 'clip'}
+        zoom={zoom}
+        onZoom={zoomTo}
+        snapping={snapping}
+        onSnapping={setSnapping}
+      />
       <div className="flex min-h-0 flex-1">
         <div
           ref={scrollerRef}
@@ -343,14 +357,6 @@ export function Timeline({
         </div>
         <ProgramMeter source={meter} />
       </div>
-      <Toolbar
-        {...toolbar}
-        canDelete={selection.length > 0}
-        zoom={zoom}
-        onZoom={zoomTo}
-        snapping={snapping}
-        onSnapping={setSnapping}
-      />
     </Panel>
   )
 }

@@ -16,7 +16,13 @@ import { useExport } from '@/hooks/use-export'
 import { useFileDrop } from '@/hooks/use-file-drop'
 import { usePlayback } from '@/hooks/use-playback'
 import type { OpenProject } from '../../../../shared/api'
-import type { ImageMedia, MediaId, MediaItem, SequenceAction } from '../../../../shared/sequence'
+import {
+  locate,
+  type ImageMedia,
+  type MediaId,
+  type MediaItem,
+  type SequenceAction
+} from '../../../../shared/sequence'
 import { errorMessage } from '@/lib/format'
 import { historyReducer, initialHistory } from '@/lib/history'
 import { createProgramMeter } from '@/lib/program-meter'
@@ -128,6 +134,21 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
 
   const split = () => edit({ type: 'split', time: playhead, newClipId: crypto.randomUUID() })
 
+  // Q and W: cut the clip under the playhead and drop the part before or after it.
+  function trimToPlayhead(side: 'left' | 'right') {
+    const position = locate(sequence.clips, playhead)
+    if (!position || position.inGap || sequence.tracks.video.locked) return
+    const { clip, sourceTime } = position
+    const media = mediaById.get(clip.mediaId)
+    edit({
+      type: 'trim',
+      clipId: clip.id,
+      in: side === 'left' ? sourceTime : clip.in,
+      out: side === 'right' ? sourceTime : clip.out,
+      mediaDuration: media?.kind === 'video' ? media.duration : clip.out
+    })
+  }
+
   function deleteSelection() {
     const { tracks } = sequence
     const batch = crypto.randomUUID()
@@ -154,6 +175,8 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
     play: () => playback.playing || playback.toggle(),
     pause: () => playback.playing && playback.toggle(),
     split,
+    trimLeft: () => trimToPlayhead('left'),
+    trimRight: () => trimToPlayhead('right'),
     duplicate,
     addText: () => duration > 0 && addText(TEXT_PRESETS[0]),
     selectAll,
@@ -268,6 +291,10 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
           edit={edit}
           canUndo={history.past.length > 0}
           canRedo={history.future.length > 0}
+          onSplit={split}
+          onTrimLeft={() => trimToPlayhead('left')}
+          onTrimRight={() => trimToPlayhead('right')}
+          onDuplicate={duplicate}
           onUndo={undo}
           onRedo={redo}
           onDelete={deleteSelection}

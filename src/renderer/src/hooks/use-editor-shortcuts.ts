@@ -5,6 +5,8 @@ interface Commands {
   play: () => void
   pause: () => void
   split: () => void
+  trimLeft: () => void
+  trimRight: () => void
   duplicate: () => void
   selectAll: () => void
   addText: () => void
@@ -35,6 +37,8 @@ export function useEditorShortcuts(commands: Commands) {
     } else if (key === ' ') commands.togglePlay()
     else if (key === 'escape') commands.clearSelection()
     else if (key === 't') commands.addText()
+    else if (key === 'q') commands.trimLeft()
+    else if (key === 'w') commands.trimRight()
     else if (key === 'k') commands.pause()
     else if (key === 'l') commands.play()
     else if (key === 'j') commands.step(-1, 'second')
@@ -58,7 +62,7 @@ const mac = navigator.platform.startsWith('Mac')
 
 export const SHORTCUTS = {
   play: 'Space',
-  split: 'X',
+  split: 'S',
   delete: 'Del',
   undo: mac ? '⌘Z' : 'Ctrl+Z',
   redo: mac ? '⇧⌘Z' : 'Ctrl+Y',
@@ -67,6 +71,8 @@ export const SHORTCUTS = {
   zoomOut: '-',
   zoomFit: '⇧Z',
   snap: 'N',
+  trimLeft: 'Q',
+  trimRight: 'W',
   start: 'Home',
   end: 'End'
 }
