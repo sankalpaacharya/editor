@@ -1,8 +1,10 @@
 import { useState, type ReactNode } from 'react'
-import { ArrowLeft01Icon, Upload04Icon } from '@hugeicons/core-free-icons'
+import { Download04Icon, Upload04Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@/components/ui/button'
 import { IconButton } from '@/components/icon-button'
+import { checkForUpdates } from '@/lib/updates'
+import logo from '../../../../../assets/logo.svg'
 
 interface EditorHeaderProps {
   name: string
@@ -32,7 +34,15 @@ export function EditorHeader({
   return (
     <header className="grid h-10 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-2">
       <nav className="flex min-w-0 items-center gap-1.5 text-sm">
-        <IconButton icon={ArrowLeft01Icon} label="Back to projects" onClick={onBack} />
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Back to projects"
+          title="Back to projects"
+          className="mr-1 rounded-lg outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <img src={logo} alt="" className="size-7 rounded-md" draggable={false} />
+        </button>
         <button
           type="button"
           onClick={onBack}
@@ -68,16 +78,23 @@ export function EditorHeader({
         )}
       </nav>
       {children ?? <span />}
-      <Button
-        variant="brand"
-        size="sm"
-        onClick={onExport}
-        disabled={!canExport}
-        className="h-8 justify-self-end px-4"
-      >
-        <HugeiconsIcon icon={Upload04Icon} strokeWidth={1.75} />
-        Export
-      </Button>
+      <div className="flex items-center gap-1 justify-self-end">
+        <IconButton
+          icon={Download04Icon}
+          label="Check for updates"
+          onClick={() => void checkForUpdates()}
+        />
+        <Button
+          variant="brand"
+          size="sm"
+          onClick={onExport}
+          disabled={!canExport}
+          className="h-8 px-4"
+        >
+          <HugeiconsIcon icon={Upload04Icon} strokeWidth={1.75} />
+          Export
+        </Button>
+      </div>
     </header>
   )
 }

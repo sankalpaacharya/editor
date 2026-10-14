@@ -1,8 +1,7 @@
 import { Download04Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
-import { toast } from 'sonner'
 import logo from '../../../../assets/logo.svg'
-import { errorMessage } from '@/lib/format'
+import { checkForUpdates } from '@/lib/updates'
 import { cn } from '@/lib/utils'
 
 export interface RailItem {
@@ -12,31 +11,10 @@ export interface RailItem {
   onSelect: () => void
 }
 
-async function checkForUpdates() {
-  try {
-    await window.editor.checkForUpdates()
-  } catch (error) {
-    toast.error('Could not check for updates', { description: errorMessage(error) })
-  }
-}
-
-export function Rail({ groups, onHome }: { groups: RailItem[][]; onHome?: () => void }) {
-  const mark = <img src={logo} alt="" className="size-8 rounded-lg" draggable={false} />
+export function Rail({ groups }: { groups: RailItem[][] }) {
   return (
     <nav className="flex w-[72px] shrink-0 flex-col items-center gap-1 rounded-lg bg-card py-3">
-      {onHome ? (
-        <button
-          type="button"
-          onClick={onHome}
-          aria-label="Back to projects"
-          title="Back to projects"
-          className="mb-3 rounded-lg outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          {mark}
-        </button>
-      ) : (
-        <div className="mb-3">{mark}</div>
-      )}
+      <img src={logo} alt="" className="mb-3 size-8 rounded-lg" draggable={false} />
       {groups.map((items, index) => (
         <div
           key={index}
@@ -59,7 +37,7 @@ export function Rail({ groups, onHome }: { groups: RailItem[][]; onHome?: () => 
   )
 }
 
-function RailButton({ label, icon, active, onSelect }: RailItem) {
+export function RailButton({ label, icon, active, onSelect }: RailItem) {
   return (
     <button
       type="button"

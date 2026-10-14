@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useReducer, useState } from 'react'
 import { Image01Icon, TextIcon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
-import { Rail } from '@/components/rail'
+import { RailButton } from '@/components/rail'
 import { EditorHeader } from '@/components/editor/header'
 import { ExportDialog } from '@/components/editor/export-dialog'
 import { Inspector } from '@/components/editor/inspector/inspector'
@@ -197,99 +197,92 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
     <div
       {...dropProps}
       className={cn(
-        'flex h-screen gap-2 p-2 outline-1 -outline-offset-1 outline-transparent',
+        'flex h-screen flex-col gap-2 p-2 outline-1 -outline-offset-1 outline-transparent',
         dropping && 'outline-brand/60'
       )}
     >
-      <Rail
-        onHome={close}
-        groups={[
-          [
-            {
-              label: 'Media',
-              icon: Image01Icon,
-              active: panel === 'media',
-              onSelect: () => setPanel('media')
-            },
-            {
-              label: 'Text',
-              icon: TextIcon,
-              active: panel === 'text',
-              onSelect: () => setPanel('text')
-            }
-          ]
-        ]}
+      <EditorHeader
+        name={name}
+        onBack={close}
+        onRename={rename}
+        canExport={sequence.clips.length > 0 && exporter.state.status === 'idle'}
+        onExport={() => exporter.start(sequence)}
       />
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <EditorHeader
-          name={name}
-          onBack={close}
-          onRename={rename}
-          canExport={sequence.clips.length > 0 && exporter.state.status === 'idle'}
-          onExport={() => exporter.start(sequence)}
-        />
-        <div className="flex min-h-0 flex-1 gap-2">
-          {panel === 'media' ? (
-            <MediaPanel
-              media={media}
-              missing={missing}
-              sequence={sequence}
-              onImport={() => importMedia()}
-              onAdd={(item) => addMedia(item)}
-              onRemove={removeMedia}
-            />
-          ) : (
-            <TextPanel canAdd={duration > 0} onAdd={addText} />
-          )}
-          <Preview
-            sequence={sequence}
-            mediaById={mediaById}
-            playhead={playhead}
-            activeMediaId={playback.activeMediaId}
-            registerVideo={registerMeteredVideo}
-            selection={selection}
-            onSelect={select}
-            edit={edit}
-            onDropImage={(image, position) => addImage(image, playhead, position)}
-          >
-            <PlayerControls
-              playing={playback.playing}
-              playhead={playhead}
-              duration={duration}
-              format={sequence.format}
-              onToggle={playback.toggle}
-            />
-          </Preview>
-          <Inspector
-            projectId={project.id}
-            sequence={sequence}
-            mediaById={mediaById}
-            selection={selection}
-            exportsRevision={exporter.finished}
-            edit={edit}
-            onDelete={deleteSelection}
+      <div className="flex min-h-0 flex-1 gap-2">
+        <nav className="flex w-[72px] shrink-0 flex-col items-center gap-1 rounded-lg bg-card py-3">
+          <RailButton
+            label="Media"
+            icon={Image01Icon}
+            active={panel === 'media'}
+            onSelect={() => setPanel('media')}
           />
-        </div>
-        <Timeline
-          meter={meter.source}
+          <RailButton
+            label="Text"
+            icon={TextIcon}
+            active={panel === 'text'}
+            onSelect={() => setPanel('text')}
+          />
+        </nav>
+        {panel === 'media' ? (
+          <MediaPanel
+            media={media}
+            missing={missing}
+            sequence={sequence}
+            onImport={() => importMedia()}
+            onAdd={(item) => addMedia(item)}
+            onRemove={removeMedia}
+          />
+        ) : (
+          <TextPanel canAdd={duration > 0} onAdd={addText} />
+        )}
+        <Preview
           sequence={sequence}
           mediaById={mediaById}
-          playback={playback}
+          playhead={playhead}
+          activeMediaId={playback.activeMediaId}
+          registerVideo={registerMeteredVideo}
           selection={selection}
           onSelect={select}
           edit={edit}
-          canUndo={history.past.length > 0}
-          canRedo={history.future.length > 0}
-          onSplit={split}
-          onTrimLeft={() => trimToPlayhead('left')}
-          onTrimRight={() => trimToPlayhead('right')}
-          onDuplicate={duplicate}
-          onUndo={undo}
-          onRedo={redo}
+          onDropImage={(image, position) => addImage(image, playhead, position)}
+        >
+          <PlayerControls
+            playing={playback.playing}
+            playhead={playhead}
+            duration={duration}
+            format={sequence.format}
+            onToggle={playback.toggle}
+          />
+        </Preview>
+        <Inspector
+          projectId={project.id}
+          sequence={sequence}
+          mediaById={mediaById}
+          selection={selection}
+          exportsRevision={exporter.finished}
+          edit={edit}
           onDelete={deleteSelection}
-          onDropMedia={addMedia}
         />
       </div>
+      <Timeline
+        meter={meter.source}
+        sequence={sequence}
+        mediaById={mediaById}
+        playback={playback}
+        selection={selection}
+        onSelect={select}
+        edit={edit}
+        canUndo={history.past.length > 0}
+        canRedo={history.future.length > 0}
+        onSplit={split}
+        onTrimLeft={() => trimToPlayhead('left')}
+        onTrimRight={() => trimToPlayhead('right')}
+        onDuplicate={duplicate}
+        onUndo={undo}
+        onRedo={redo}
+        onDelete={deleteSelection}
+        onDropMedia={addMedia}
+      />
       <ExportDialog state={exporter.state} onCancel={exporter.cancel} />
     </div>
   )
