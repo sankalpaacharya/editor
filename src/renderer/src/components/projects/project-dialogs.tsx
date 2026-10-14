@@ -48,7 +48,7 @@ export function RenameProjectDialog({
         onOpenChange(next)
       }}
     >
-      <DialogContent showCloseButton={false} className="gap-4 rounded-xl p-4 sm:max-w-xs">
+      <DialogContent showCloseButton={false} className="gap-4 rounded-lg p-4 sm:max-w-xs">
         <form onSubmit={submit} className="contents">
           <DialogHeader>
             <DialogTitle className="text-sm">Rename project</DialogTitle>
@@ -83,7 +83,7 @@ export function DeleteProjectDialog({
 }: ProjectDialogProps & { onDelete: () => void }) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="gap-4 rounded-xl p-4 data-[size=default]:sm:max-w-sm">
+      <AlertDialogContent className="gap-4 rounded-lg p-4 data-[size=default]:sm:max-w-sm">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-sm">Delete “{name}”?</AlertDialogTitle>
           <AlertDialogDescription className="text-xs">

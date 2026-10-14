@@ -68,7 +68,7 @@ export function NumberField({
         onKeyDown={(event) => {
           if (event.key === 'Enter') event.currentTarget.blur()
         }}
-        className="h-9 rounded-xl border-0 bg-muted px-3 text-xs tabular-nums shadow-none md:text-xs focus-visible:ring-2 focus-visible:ring-ring/40 [&::-webkit-inner-spin-button]:appearance-none"
+        className="h-9 rounded-lg border-0 bg-muted px-3 text-xs tabular-nums shadow-none md:text-xs focus-visible:ring-2 focus-visible:ring-ring/40 [&::-webkit-inner-spin-button]:appearance-none"
       />
       {suffix && (
         <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[11px] text-muted-foreground">

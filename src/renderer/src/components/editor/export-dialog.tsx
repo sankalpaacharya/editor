@@ -14,7 +14,7 @@ export function ExportDialog({ state, onCancel }: { state: ExportState; onCancel
   const progress = state.status === 'running' ? state.progress : 0
   return (
     <Dialog open={state.status === 'running'} onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent showCloseButton={false} className="gap-3 rounded-xl p-4 sm:max-w-xs">
+      <DialogContent showCloseButton={false} className="gap-3 rounded-lg p-4 sm:max-w-xs">
         <DialogHeader className="flex-row items-baseline justify-between">
           <DialogTitle className="text-sm">Exporting</DialogTitle>
           <DialogDescription className="text-xs tabular-nums">

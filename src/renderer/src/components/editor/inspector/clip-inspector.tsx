@@ -55,7 +55,7 @@ export function ClipInspector({ clip, media, edit }: ClipInspectorProps) {
               aria-pressed={speed === clip.speed}
               onClick={() => edit({ type: 'setSpeed', clipId: clip.id, speed })}
               className={cn(
-                'h-9 rounded-xl text-xs tabular-nums transition-colors',
+                'h-9 rounded-lg text-xs tabular-nums transition-colors',
                 speed === clip.speed
                   ? 'bg-secondary font-medium text-foreground ring-1 ring-brand/50'
                   : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
