@@ -2,47 +2,12 @@ import { useEffect, useState } from 'react'
 import { FolderOpenIcon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { IconButton } from '@/components/icon-button'
-import { Field, ReadOnly, Section } from '@/components/editor/inspector/fields'
+import { Section } from '@/components/editor/inspector/fields'
 import type { ExportRecord, ProjectId } from '../../../../../shared/api'
-import type { Sequence } from '../../../../../shared/sequence'
-import { errorMessage, fileName, formatAgo, formatClock, formatDuration } from '@/lib/format'
+import { errorMessage, fileName, formatAgo, formatDuration } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-interface ProjectInfoProps {
-  projectId: ProjectId
-  sequence: Sequence
-  duration: number
-  exportsRevision: number
-}
-
-export function ProjectInfo({ projectId, sequence, duration, exportsRevision }: ProjectInfoProps) {
-  const { format } = sequence
-  return (
-    <>
-      <Section title="Format">
-        <Field label="Size">
-          {() => (
-            <ReadOnly>
-              {format.width}×{format.height}
-            </ReadOnly>
-          )}
-        </Field>
-        <Field label="Rate">{() => <ReadOnly>{Number(format.fps.toFixed(2))} fps</ReadOnly>}</Field>
-        <Field label="Length">{() => <ReadOnly>{formatClock(duration)}</ReadOnly>}</Field>
-        <Field label="Clips">
-          {() => (
-            <ReadOnly>
-              {sequence.clips.length} clips · {sequence.overlays.length} overlays
-            </ReadOnly>
-          )}
-        </Field>
-      </Section>
-      <ExportHistory projectId={projectId} revision={exportsRevision} />
-    </>
-  )
-}
-
-function ExportHistory({ projectId, revision }: { projectId: ProjectId; revision: number }) {
+export function ExportHistory({ projectId, revision }: { projectId: ProjectId; revision: number }) {
   const [exports, setExports] = useState<ExportRecord[] | null>(null)
 
   useEffect(() => {

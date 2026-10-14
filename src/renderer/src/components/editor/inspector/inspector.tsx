@@ -4,7 +4,7 @@ import type { Edit } from '@/components/editor/editor'
 import { Panel } from '@/components/editor/panel'
 import { ClipInspector } from '@/components/editor/inspector/clip-inspector'
 import { ImageInspector, TextInspector } from '@/components/editor/inspector/overlay-inspector'
-import { ProjectInfo } from '@/components/editor/inspector/project-info'
+import { ExportHistory } from '@/components/editor/inspector/export-history'
 import { SHORTCUTS } from '@/hooks/use-editor-shortcuts'
 import type { ProjectId } from '../../../../../shared/api'
 import type { MediaId, MediaItem, Overlay, Sequence } from '../../../../../shared/sequence'
@@ -76,12 +76,7 @@ export function Inspector({
             onChange={updateOverlay}
           />
         ) : (
-          <ProjectInfo
-            projectId={projectId}
-            sequence={sequence}
-            duration={duration}
-            exportsRevision={exportsRevision}
-          />
+          <ExportHistory projectId={projectId} revision={exportsRevision} />
         )}
       </div>
     </Panel>
