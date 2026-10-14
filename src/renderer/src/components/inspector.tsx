@@ -7,7 +7,7 @@ import { ExportHistory } from '@/components/export-history'
 import { NumberField } from '@/components/number-field'
 import { cn } from '@/lib/utils'
 import {
-  clipLength,
+  timelineLength,
   type Clip,
   type ImageOverlay,
   type Overlay,
@@ -138,7 +138,7 @@ function ClipInspector({ clip, index, count, dispatch, onDelete }: ClipInspector
         )}
       </Field>
       <Field label="Duration">
-        {() => <span className="text-xs tabular-nums">{formatTime(clipLength(clip))}</span>}
+        {() => <span className="text-xs tabular-nums">{formatTime(timelineLength(clip))}</span>}
       </Field>
       <div className="flex flex-col gap-1.5">
         <span className="text-xs text-muted-foreground">Speed</span>
@@ -245,9 +245,9 @@ function ImageInspector({
         {(id) => (
           <PercentSlider
             id={id}
-            value={overlay.scale}
+            value={overlay.widthRatio}
             min={5}
-            onChange={(scale) => onChange({ ...overlay, scale })}
+            onChange={(widthRatio) => onChange({ ...overlay, widthRatio })}
           />
         )}
       </Field>

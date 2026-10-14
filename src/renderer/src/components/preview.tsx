@@ -73,7 +73,7 @@ export function Preview({
                 left: `${overlay.x * 100}%`,
                 top: `${overlay.y * 100}%`,
                 transform: 'translate(-50%, -50%)',
-                width: overlay.kind === 'image' ? `${overlay.scale * 100}%` : undefined
+                width: overlay.kind === 'image' ? `${overlay.widthRatio * 100}%` : undefined
               }}
             >
               {overlay.kind === 'text' ? (

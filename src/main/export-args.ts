@@ -12,20 +12,12 @@ const escapeOptionValue = (value: string): string => value.replace(/[\\':]/g, '\
 const escapeGraphValue = (value: string): string => value.replace(/[\\'[\],;]/g, '\\$&')
 const filterValue = (value: string): string => escapeGraphValue(escapeOptionValue(value))
 
-// atempo only accepts factors between 0.5 and 2, so larger changes are chained.
+const ATEMPO_MIN = 0.5
+
 function atempoChain(speed: number): string {
-  const factors: number[] = []
-  let rest = speed
-  while (rest > 2) {
-    factors.push(2)
-    rest /= 2
-  }
-  while (rest < 0.5) {
-    factors.push(0.5)
-    rest /= 0.5
-  }
-  if (rest !== 1) factors.push(rest)
-  return factors.map((factor) => `,atempo=${factor.toFixed(4)}`).join('')
+  if (speed === 1) return ''
+  if (speed >= ATEMPO_MIN) return `,atempo=${speed}`
+  return `,atempo=${ATEMPO_MIN},atempo=${speed / ATEMPO_MIN}`
 }
 
 const enableBetween = (start: number, end: number): string =>
@@ -52,7 +44,6 @@ function imageFilter(overlay: ImageOverlay): string {
   ].join(':')
 }
 
-/** Builds the ffmpeg argument list that renders `project` to an H.264/AAC MP4. */
 export function buildExportArgs(project: Project, inputs: ExportInputs): string[] {
   const { source, clips, overlays } = project
   const imageOverlays = overlays.filter((overlay) => overlay.kind === 'image')
@@ -78,7 +69,7 @@ export function buildExportArgs(project: Project, inputs: ExportInputs): string[
       graph.push(`[${current}]${textFilter(overlay, inputs.fontPath)}[${next}]`)
     } else {
       const input = imageOverlays.indexOf(overlay) + 1
-      const width = Math.max(2, Math.round((source.width * overlay.scale) / 2) * 2)
+      const width = Math.max(2, Math.round((source.width * overlay.widthRatio) / 2) * 2)
       graph.push(`[${input}:v]scale=${width}:-2[img${i}]`)
       graph.push(`[${current}][img${i}]${imageFilter(overlay)}[${next}]`)
     }
@@ -113,7 +104,6 @@ export function buildExportArgs(project: Project, inputs: ExportInputs): string[
   ]
 }
 
-/** Reads the latest `out_time_us` from a chunk of ffmpeg `-progress` output. */
 export function parseProgressSeconds(chunk: string): number | null {
   const matches = [...chunk.matchAll(/^out_time_us=(\d+)$/gm)]
   const last = matches.at(-1)

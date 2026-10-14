@@ -7,7 +7,6 @@ import {
   type TextOverlay
 } from '../../../shared/project'
 
-/** `edited` stays false until the user changes the project, so a fresh load is never saved. */
 export interface OpenProject {
   project: Project
   edited: boolean
@@ -77,7 +76,7 @@ export function newImageOverlay(
     ...overlayTiming(playhead, duration),
     kind: 'image',
     image,
-    scale: 0.25,
+    widthRatio: 0.25,
     x: 0.85,
     y: 0.15
   }

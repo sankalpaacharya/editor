@@ -11,7 +11,6 @@ export function videoIdOf(sourceAssetId: AssetId): number {
   return id
 }
 
-/** Opens a video file, restoring the edits saved the last time it was open. */
 export async function openProject(path: string): Promise<Project> {
   const source = await importVideo(path)
   const { id, edits } = rememberVideo(path, source.name, source.duration)

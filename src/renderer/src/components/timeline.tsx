@@ -4,7 +4,7 @@ import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
-  clipLength,
+  timelineLength,
   timelineDuration,
   type Clip,
   type Project,
@@ -73,9 +73,9 @@ export function Timeline({
       (_end, dx) => {
         setMoving(null)
         if (!dragging) return
-        const center = starts[index] + clipLength(clip) / 2 + dx / pps
+        const center = starts[index] + timelineLength(clip) / 2 + dx / pps
         const toIndex = clips.filter(
-          (other, i) => i !== index && starts[i] + clipLength(other) / 2 < center
+          (other, i) => i !== index && starts[i] + timelineLength(other) / 2 < center
         ).length
         if (toIndex !== index) dispatch({ type: 'moveClip', clipId: clip.id, toIndex })
       }
@@ -137,7 +137,7 @@ export function Timeline({
                   )}
                   style={{
                     left: starts[index] * pps,
-                    width: clipLength(clip) * pps,
+                    width: timelineLength(clip) * pps,
                     transform: offset ? `translateX(${offset}px)` : undefined
                   }}
                 >

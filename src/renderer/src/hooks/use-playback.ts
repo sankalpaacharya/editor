@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { clipLength, locate, timelineDuration, type Clip } from '../../../shared/project'
+import { timelineLength, locate, timelineDuration, type Clip } from '../../../shared/project'
 
 // A media load resets playbackRate to defaultPlaybackRate, so both are set.
 function setRate(video: HTMLVideoElement, speed: number) {
@@ -7,8 +7,7 @@ function setRate(video: HTMLVideoElement, speed: number) {
   video.playbackRate = speed
 }
 
-// Adjacent clips that continue the same source (as after a split) play through without a seek.
-const SEAMLESS = 0.05
+const SEAMLESS_GAP_SECONDS = 0.05
 
 export function usePlayback(clips: readonly Clip[]) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -64,8 +63,9 @@ export function usePlayback(clips: readonly Clip[]) {
         }
         indexRef.current += 1
         setRate(video, next.speed)
-        if (Math.abs(next.in - video.currentTime) > SEAMLESS) video.currentTime = next.in
-        setPlayhead(clipStart + clipLength(clip))
+        if (Math.abs(next.in - video.currentTime) > SEAMLESS_GAP_SECONDS)
+          video.currentTime = next.in
+        setPlayhead(clipStart + timelineLength(clip))
       } else {
         setPlayhead(clipStart + Math.max(video.currentTime - clip.in, 0) / clip.speed)
       }

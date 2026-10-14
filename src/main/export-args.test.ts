@@ -2,13 +2,11 @@ import { execFileSync } from 'node:child_process'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import ffmpegPath from 'ffmpeg-static'
+import ffmpeg from 'ffmpeg-static'
 import ffprobe from 'ffprobe-static'
 import { describe, expect, it } from 'vitest'
 import type { Project } from '../shared/project'
 import { buildExportArgs, parseProgressSeconds } from './export-args'
-
-const ffmpeg = ffmpegPath as unknown as string
 
 describe('buildExportArgs', () => {
   it('renders trimmed, reordered, sped-up clips with text and image overlays', () => {
@@ -71,7 +69,7 @@ describe('buildExportArgs', () => {
           id: 'i',
           kind: 'image',
           image: { assetId: 'image', name: 'logo.png', width: 64, height: 64 },
-          scale: 0.25,
+          widthRatio: 0.25,
           x: 0.8,
           y: 0.8,
           start: 1,

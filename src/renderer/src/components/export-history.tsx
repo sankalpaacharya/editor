@@ -10,7 +10,6 @@ import { errorMessage, fileName, formatDate, formatTime } from '@/lib/editor'
 
 interface ExportHistoryProps {
   sourceAssetId: AssetId
-  /** Changes whenever an export finishes, so the list refetches. */
   revision: number
 }
 

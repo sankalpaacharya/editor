@@ -34,7 +34,6 @@ export const clipSchema = z.object({
   out: seconds,
   speed: z.number().finite().min(MIN_SPEED).max(MAX_SPEED).default(1)
 })
-/** A range of the source video in source seconds, played back at `speed`. */
 export type Clip = z.infer<typeof clipSchema>
 
 const overlayBase = {
@@ -52,24 +51,17 @@ export const textOverlaySchema = z.object({
   fontSize: z.number().finite().min(4).max(1000),
   color: z.string().regex(/^#[0-9a-f]{6}$/i)
 })
-/** `fontSize` is in source-video pixels, so the preview scales it with the frame. */
 export type TextOverlay = z.infer<typeof textOverlaySchema>
 
 export const imageOverlaySchema = z.object({
   ...overlayBase,
   kind: z.literal('image'),
   image: imageAssetSchema,
-  scale: z.number().finite().min(0.01).max(4)
+  widthRatio: z.number().finite().min(0.01).max(4)
 })
-/** `scale` is the image width as a fraction of the frame width. */
 export type ImageOverlay = z.infer<typeof imageOverlaySchema>
 
 export const overlaySchema = z.discriminatedUnion('kind', [textOverlaySchema, imageOverlaySchema])
-/**
- * Overlays live on the timeline, not the source: `start`/`end` are timeline seconds.
- * `x`/`y` place the overlay's center as a fraction of the frame, which is the
- * coordinate space both the preview and the ffmpeg export use.
- */
 export type Overlay = z.infer<typeof overlaySchema>
 
 export const projectSchema = z.object({
@@ -85,29 +77,26 @@ export function createProject(source: MediaInfo, clipId: string): Project {
   return { source, clips: [{ id: clipId, in: 0, out: source.duration, speed: 1 }], overlays: [] }
 }
 
-/** How long the clip lasts on the timeline. */
-export function clipLength(clip: Clip): number {
+export function timelineLength(clip: Clip): number {
   return (clip.out - clip.in) / clip.speed
 }
 
 export function timelineDuration(clips: readonly Clip[]): number {
-  return clips.reduce((sum, clip) => sum + clipLength(clip), 0)
+  return clips.reduce((sum, clip) => sum + timelineLength(clip), 0)
 }
 
 export interface TimelinePosition {
   index: number
   clip: Clip
-  /** Timeline time where this clip begins. */
   clipStart: number
   sourceTime: number
 }
 
-/** Maps a timeline time to the clip under it and the matching source time. */
 export function locate(clips: readonly Clip[], time: number): TimelinePosition {
   let clipStart = 0
   for (let index = 0; index < clips.length; index++) {
     const clip = clips[index]
-    const length = clipLength(clip)
+    const length = timelineLength(clip)
     if (time < clipStart + length || index === clips.length - 1) {
       const offset = Math.min(Math.max(time - clipStart, 0), length)
       return { index, clip, clipStart, sourceTime: clip.in + offset * clip.speed }

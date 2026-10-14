@@ -5,7 +5,6 @@ import { errorMessage, type OpenProject } from '@/lib/editor'
 
 const DELAY = 500
 
-/** Saves edits shortly after they happen. Await `flush` before the project goes away. */
 export function useAutosave(open: OpenProject | null): () => Promise<void> {
   const pending = useRef<Project | null>(null)
 

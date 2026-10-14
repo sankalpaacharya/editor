@@ -2,14 +2,12 @@ import type { AssetId, ImageAsset, Project } from './project'
 
 export type ExportResult = { status: 'done'; path: string } | { status: 'canceled' }
 
-/** A video in the library, most recently opened first. */
 export interface RecentVideo {
   id: number
   name: string
   duration: number
   openedAt: string
   exportCount: number
-  /** The file was moved or deleted since it was last opened. */
   missing: boolean
 }
 
@@ -21,9 +19,7 @@ export interface ExportRecord {
   missing: boolean
 }
 
-/** The API the preload script exposes to the renderer as `window.editor`. */
 export interface EditorApi {
-  /** Opens a video and restores its saved edits, if any. */
   openVideo(): Promise<Project | null>
   importVideo(file: File): Promise<Project>
   openRecent(videoId: number): Promise<Project>

@@ -9,7 +9,6 @@ interface NumberFieldProps {
   digits?: number
 }
 
-/** Commits every parseable value and keeps the raw text while focused, so typing "1." works. */
 export function NumberField({ id, value, onCommit, step = 0.1, digits = 2 }: NumberFieldProps) {
   const [draft, setDraft] = useState<string | null>(null)
   return (

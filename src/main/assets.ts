@@ -20,7 +20,6 @@ export const FONT_PATH = app.isPackaged
   ? `${process.resourcesPath}/fonts/NotoSans-SemiBold.ttf`
   : `${app.getAppPath()}/resources/fonts/NotoSans-SemiBold.ttf`
 
-/** Files the user picked or dropped. The renderer only ever sees their ids. */
 const granted = new Map<AssetId, string>()
 
 export function resolveAsset(assetId: AssetId): string {

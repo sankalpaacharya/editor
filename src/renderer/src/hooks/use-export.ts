@@ -3,7 +3,6 @@ import { toast } from 'sonner'
 import type { Project } from '../../../shared/project'
 import { errorMessage } from '@/lib/editor'
 
-/** `progress` stays null while the save dialog is open, before ffmpeg reports anything. */
 export type ExportState = { status: 'idle' } | { status: 'running'; progress: number | null }
 
 export function useExport() {

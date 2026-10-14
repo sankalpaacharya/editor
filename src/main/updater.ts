@@ -8,7 +8,6 @@ let checking = false
 const message = (window: BrowserWindow | undefined, options: Electron.MessageBoxOptions) =>
   window ? dialog.showMessageBox(window, options) : dialog.showMessageBox(options)
 
-/** Checks GitHub Releases for a newer version and walks the user through installing it. */
 export async function checkForUpdates(window?: BrowserWindow): Promise<void> {
   if (!app.isPackaged) {
     await message(window, { message: 'Updates are only available in installed builds.' })

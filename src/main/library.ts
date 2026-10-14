@@ -15,7 +15,6 @@ import {
   type Project
 } from '../shared/project'
 
-// Asset ids only live for one session, so stored image overlays keep the file path instead.
 const storedOverlaySchema = z.discriminatedUnion('kind', [
   textOverlaySchema,
   imageOverlaySchema.extend({
@@ -56,7 +55,6 @@ function database(): DatabaseSync {
 
 const now = () => new Date().toISOString()
 
-/** Records that `path` was opened and returns its row id and any saved edits. */
 export function rememberVideo(
   path: string,
   name: string,
@@ -140,7 +138,6 @@ export function listRecent(limit = 20): RecentVideo[] {
   }))
 }
 
-/** Swaps session asset ids for file paths so the edits survive a restart. */
 export function toStoredEdits(
   project: Project,
   resolvePath: (assetId: string) => string
@@ -155,7 +152,6 @@ export function toStoredEdits(
   }
 }
 
-/** Restores stored edits, granting fresh asset ids and dropping images whose file is gone. */
 export function fromStoredEdits(
   edits: StoredEdits,
   grantImage: (path: string, image: Omit<ImageAsset, 'assetId'>) => ImageAsset | null
