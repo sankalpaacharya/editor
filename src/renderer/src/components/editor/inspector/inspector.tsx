@@ -16,7 +16,6 @@ interface InspectorProps {
   sequence: Sequence
   mediaById: ReadonlyMap<MediaId, MediaItem>
   selection: Selection
-  duration: number
   exportsRevision: number
   edit: Edit
   onDelete: () => void
@@ -27,7 +26,6 @@ export function Inspector({
   sequence,
   mediaById,
   selection,
-  duration,
   exportsRevision,
   edit,
   onDelete
@@ -71,18 +69,12 @@ export function Inspector({
         {clip ? (
           <ClipInspector key={clip.id} clip={clip} tab={clipTab} edit={edit} />
         ) : overlay?.kind === 'text' ? (
-          <TextInspector
-            key={overlay.id}
-            overlay={overlay}
-            duration={duration}
-            onChange={updateOverlay}
-          />
+          <TextInspector key={overlay.id} overlay={overlay} onChange={updateOverlay} />
         ) : overlay?.kind === 'image' ? (
           <ImageInspector
             key={overlay.id}
             overlay={overlay}
             image={image?.kind === 'image' ? image : undefined}
-            duration={duration}
             onChange={updateOverlay}
           />
         ) : (

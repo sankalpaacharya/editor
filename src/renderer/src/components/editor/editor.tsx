@@ -266,7 +266,6 @@ export function Editor({ project, onClose }: { project: OpenProject; onClose: ()
             sequence={sequence}
             mediaById={mediaById}
             selection={selection}
-            duration={duration}
             exportsRevision={exporter.finished}
             edit={edit}
             onDelete={deleteSelection}

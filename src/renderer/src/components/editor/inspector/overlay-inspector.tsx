@@ -7,11 +7,10 @@ import { clamp } from '@/lib/format'
 
 interface OverlayInspectorProps<T extends Overlay> {
   overlay: T
-  duration: number
   onChange: (overlay: T, coalesce?: string) => void
 }
 
-export function TextInspector({ overlay, duration, onChange }: OverlayInspectorProps<TextOverlay>) {
+export function TextInspector({ overlay, onChange }: OverlayInspectorProps<TextOverlay>) {
   const [draft, setDraft] = useState<string | null>(null)
   const typing = useCoalesceKey()
   return (
@@ -65,7 +64,6 @@ export function TextInspector({ overlay, duration, onChange }: OverlayInspectorP
           )}
         </Field>
       </Section>
-      <Placement overlay={overlay} duration={duration} onChange={onChange} />
     </>
   )
 }
@@ -73,7 +71,6 @@ export function TextInspector({ overlay, duration, onChange }: OverlayInspectorP
 export function ImageInspector({
   overlay,
   image,
-  duration,
   onChange
 }: OverlayInspectorProps<ImageOverlay> & { image: ImageMedia | undefined }) {
   return (
@@ -87,60 +84,6 @@ export function ImageInspector({
               value={overlay.widthRatio}
               min={5}
               onChange={(widthRatio, coalesce) => onChange({ ...overlay, widthRatio }, coalesce)}
-            />
-          )}
-        </Field>
-      </Section>
-      <Placement overlay={overlay} duration={duration} onChange={onChange} />
-    </>
-  )
-}
-
-function Placement<T extends Overlay>({ overlay, duration, onChange }: OverlayInspectorProps<T>) {
-  return (
-    <>
-      <Section title="Position">
-        <Field label="X">
-          {(id) => (
-            <PercentSlider
-              id={id}
-              value={overlay.x}
-              onChange={(x, coalesce) => onChange({ ...overlay, x }, coalesce)}
-            />
-          )}
-        </Field>
-        <Field label="Y">
-          {(id) => (
-            <PercentSlider
-              id={id}
-              value={overlay.y}
-              onChange={(y, coalesce) => onChange({ ...overlay, y }, coalesce)}
-            />
-          )}
-        </Field>
-      </Section>
-      <Section title="Timing">
-        <Field label="Start">
-          {(id) => (
-            <NumberField
-              id={id}
-              value={overlay.start}
-              suffix="s"
-              onCommit={(value, coalesce) =>
-                onChange({ ...overlay, start: clamp(value, 0, overlay.end) }, coalesce)
-              }
-            />
-          )}
-        </Field>
-        <Field label="End">
-          {(id) => (
-            <NumberField
-              id={id}
-              value={overlay.end}
-              suffix="s"
-              onCommit={(value, coalesce) =>
-                onChange({ ...overlay, end: clamp(value, overlay.start, duration) }, coalesce)
-              }
             />
           )}
         </Field>
