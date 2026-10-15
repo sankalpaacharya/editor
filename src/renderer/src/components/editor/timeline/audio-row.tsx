@@ -2,6 +2,8 @@ import { useEffect, useState, type CSSProperties, type PointerEvent } from 'reac
 import {
   AUDIO_ROW_HEIGHT,
   clipBox,
+  MAKE_ROOM,
+  shownStart,
   sourceSpan,
   type ClipDrag
 } from '@/components/editor/timeline/geometry'
@@ -43,7 +45,6 @@ export function AudioRow({
     <div className="relative rounded-md bg-white/[0.02]" style={{ height: AUDIO_ROW_HEIGHT }}>
       {clips.map((clip, index) => {
         const media = mediaById.get(clip.mediaId)
-        const offset = drag?.clipId === clip.id ? drag.dx : 0
         const hasAudio = media?.kind === 'video' && media.hasAudio
         return (
           <div
@@ -57,12 +58,11 @@ export function AudioRow({
             }}
             className={cn(
               'absolute inset-y-0 overflow-hidden rounded-md bg-track-audio',
-              clip.volume === 0 && 'opacity-40'
+              clip.volume === 0 && 'opacity-40',
+              drag?.clipId === clip.id && 'z-10 shadow-lg',
+              drag?.starts && drag.clipId !== clip.id && MAKE_ROOM
             )}
-            style={{
-              ...clipBox(starts[index], timelineLength(clip), pps),
-              transform: offset ? `translateX(${offset}px)` : undefined
-            }}
+            style={clipBox(shownStart(drag, clip, index, starts), timelineLength(clip), pps)}
           >
             <Waveform
               url={hasAudio ? mediaUrl.waveform(clip.mediaId) : null}

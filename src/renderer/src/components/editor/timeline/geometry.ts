@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import {
   clipStarts,
+  reorderClips,
   timelineLength,
   type Clip,
   type MediaItem,
@@ -21,8 +22,25 @@ const OVERLAY_LANE_GAP = 2
 
 export interface ClipDrag {
   clipId: string
-  dx: number
+  // Where the dragged clip is drawn, under the pointer.
+  start: number
+  // Where the other clips sit while the drag lasts. Null when they stay put.
+  starts: number[] | null
 }
+
+// Where a clip is drawn: under the pointer while it is dragged, else where the drag puts it.
+export function shownStart(
+  drag: ClipDrag | null,
+  clip: Clip,
+  index: number,
+  starts: readonly number[]
+): number {
+  if (drag?.clipId === clip.id) return drag.start
+  return drag?.starts?.[index] ?? starts[index]
+}
+
+// Slides the other clips into their new places while a clip is dragged on the magnetic track.
+export const MAKE_ROOM = 'transition-[left] duration-150 ease-out motion-reduce:transition-none'
 
 export function sourceSpan(clip: Clip, media: MediaItem | undefined, pps: number): CSSProperties {
   const mediaDuration = media?.kind === 'video' ? media.duration : clip.out
@@ -61,6 +79,21 @@ export function insertionIndex(clips: readonly Clip[], time: number, skip = -1):
   return clips.filter(
     (clip, index) => index !== skip && starts[index] + timelineLength(clip) / 2 < time
   ).length
+}
+
+// The slot a clip dragged on the magnetic track lands in: after every clip whose middle it has
+// passed, measured on the track with its gaps closed.
+export function magnetIndex(clips: readonly Clip[], index: number, start: number): number {
+  const packed = clips.map((clip) => ({ ...clip, gap: 0 }))
+  return insertionIndex(packed, start + timelineLength(clips[index]) / 2, index)
+}
+
+// Where each clip sits, in the order of `clips`, once the dragged one takes the slot.
+export function magnetStarts(clips: readonly Clip[], clipId: string, index: number): number[] {
+  const order = reorderClips(clips, clipId, index)
+  const starts = clipStarts(order)
+  const byId = new Map(order.map((clip, k) => [clip.id, starts[k]]))
+  return clips.map((clip) => byId.get(clip.id) ?? 0)
 }
 
 export interface OverlayLayout {
